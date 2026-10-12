@@ -6,7 +6,7 @@ import { addDays, localDay } from '../../src/domain/progress'
 
 async function stored(page: Page) { return page.evaluate(key => JSON.parse(localStorage.getItem(key) || 'null'), STORAGE_KEY) }
 async function start(page: Page) {
-  await page.goto('/')
+  await page.goto('./')
   await page.getByRole('button', { name: '开始学单词', exact: true }).click()
   await page.getByRole('button', { name: '跳过', exact: true }).click()
 }
@@ -26,8 +26,9 @@ async function prepareSpell(page: Page, meaning = '苹果') {
 }
 
 test('simple child home and working search with retained filters', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('./')
   await expect(page.getByRole('heading', { name: '一起学单词吧' })).toBeVisible()
+  await expect(page.locator('.word-row')).toHaveCount(0)
   const text = await page.locator('main:visible').innerText()
   expect(text).not.toMatch(/850|0\s*\/|%|字母课程|积分|签到/)
   await page.getByRole('link', { name: '翻翻词语书' }).click()
@@ -130,7 +131,7 @@ test('wordbook practice preserves the formal session and marks current review hi
   state.settings.spokenGuidance = false
   state.words['ogden-apple'] = { teaching: 'completed', reviewStep: 2, lastReviewedOn: addDays(localDay(), -7), nextReviewOn: localDay() }
   await page.addInitScript(({ key, state }) => { if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(state)) }, { key: STORAGE_KEY, state })
-  await page.goto('/')
+  await page.goto('./')
   await page.getByRole('button', { name: '复习一下', exact: true }).click()
   await hear(page)
   await page.getByRole('textbox').pressSequentially('ap')
@@ -157,7 +158,7 @@ test('wordbook practice preserves the formal session and marks current review hi
 })
 
 test('parent has one export action with 850 UTF-8 rows', async ({ page }) => {
-  await page.goto('/#/parent')
+  await page.goto('./#/parent')
   await expect(page.getByRole('heading', { name: '家长设置' })).toBeVisible()
   await expect(page.getByRole('button', { name: /导出/ })).toHaveCount(1)
   const downloadPromise = page.waitForEvent('download')
@@ -181,7 +182,7 @@ test('completed review spelling survives a wordbook visit and reload', async ({ 
   await page.addInitScript(({ key, state }) => {
     if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(state))
   }, { key: STORAGE_KEY, state: initial })
-  await page.goto('/')
+  await page.goto('./')
   await page.getByRole('button', { name: '复习一下', exact: true }).click()
   await hear(page)
   await page.getByRole('textbox').pressSequentially('apple')
@@ -208,16 +209,16 @@ test('completed review spelling survives a wordbook visit and reload', async ({ 
 
 test('damaged storage remains intact and the application blocks overwrites', async ({ page }) => {
   await page.addInitScript(key => localStorage.setItem(key, '{broken'), STORAGE_KEY)
-  await page.goto('/')
+  await page.goto('./')
   await expect(page.getByRole('heading', { name: '学习记录暂时无法读取' })).toBeVisible()
   await page.getByRole('button', { name: '重试读取' }).click()
   expect(await page.evaluate(key => localStorage.getItem(key), STORAGE_KEY)).toBe('{broken')
 })
 
 test('a second tab blocks stale editing and reloads the current exercise', async ({ page, context }) => {
-  await page.goto('/')
+  await page.goto('./')
   const second = await context.newPage()
-  await second.goto('/')
+  await second.goto('./')
   await expect(second.getByRole('button', { name: '开始学单词', exact: true })).toBeVisible()
   await page.getByRole('button', { name: '开始学单词', exact: true }).click()
   await page.getByRole('button', { name: '跳过', exact: true }).click()

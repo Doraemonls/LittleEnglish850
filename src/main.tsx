@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { CONTENT_VERSION, initializeCatalog } from './data/catalog'
+import { initializeCatalog } from './data/catalog'
+import catalogueUrl from './data/words.generated.json?url'
 import './app/styles.css'
 
 const root = createRoot(document.getElementById('root')!)
@@ -11,7 +12,7 @@ async function start() {
     const controller = new AbortController()
     const timeout = window.setTimeout(() => controller.abort(), 20_000)
     try {
-      const response = await fetch(`${import.meta.env.BASE_URL}data/words.json?v=${CONTENT_VERSION}`, { signal: controller.signal })
+      const response = await fetch(catalogueUrl, { signal: controller.signal })
       if (!response.ok) throw new Error('Catalogue unavailable')
       initializeCatalog(await response.json())
     } finally { window.clearTimeout(timeout) }

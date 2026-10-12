@@ -6,13 +6,13 @@ import { addDays, localDay } from '../../src/domain/progress'
 
 test('main pages and exercises have no serious accessibility violations', async ({ page }) => {
   test.skip(test.info().project.name !== 'chromium', 'One engine is sufficient for the shared DOM accessibility audit')
-  for (const route of ['/', '/#/book', '/#/book/ogden-apple', '/#/parent', '/#/about', '/#/about/en']) {
+  for (const route of ['./', './#/book', './#/book/ogden-apple', './#/parent', './#/about', './#/about/en']) {
     await page.goto(route)
     await expect(page.locator('.site-header')).toBeVisible()
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
     expect(results.violations).toEqual([])
   }
-  await page.goto('/')
+  await page.goto('./')
   await page.getByRole('button', { name: '开始学单词', exact: true }).click()
   await page.getByRole('button', { name: '跳过', exact: true }).click()
   await page.getByRole('button', { name: '试一试', exact: true }).click()
@@ -25,7 +25,7 @@ test('independent due review reaches gold only after all three questions', async
   state.settings.spokenGuidance = false
   state.words['ogden-apple'] = { teaching: 'completed', reviewStep: 2, lastReviewedOn: addDays(localDay(), -7), nextReviewOn: localDay() }
   await page.addInitScript(({ key, state }) => { if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(state)) }, { key: STORAGE_KEY, state })
-  await page.goto('/')
+  await page.goto('./')
   await page.getByRole('button', { name: '复习一下', exact: true }).click()
   await page.getByRole('button', { name: '听单词', exact: true }).click()
   await expect(page.getByRole('button', { name: '再听一次', exact: true })).toBeVisible()

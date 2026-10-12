@@ -3,17 +3,18 @@ import { STORAGE_KEY } from '../../src/services/storage'
 
 test('catalogue load failure retries without changing saved progress', async ({ page }) => {
   await page.addInitScript(key => localStorage.setItem(key, 'keep-original'), STORAGE_KEY)
-  await page.route('**/data/words.json*', route => route.abort())
-  await page.goto('/')
+  const catalogue = /\/words\.generated(?:-[\w-]+)?\.json$/
+  await page.route(catalogue, route => route.abort())
+  await page.goto('./')
   await expect(page.getByRole('heading', { name: '词语书还没准备好' })).toBeVisible()
   expect(await page.evaluate(key => localStorage.getItem(key), STORAGE_KEY)).toBe('keep-original')
-  await page.unroute('**/data/words.json*')
+  await page.unroute(catalogue)
   await page.getByRole('button', { name: '重新加载', exact: true }).click()
   await expect(page.getByRole('heading', { name: '学习记录暂时无法读取' })).toBeVisible()
 })
 
 test('storage write failure keeps in-memory exercise and offers successful retry', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('./')
   await page.getByRole('heading', { name: '一起学单词吧' }).waitFor()
   await page.evaluate(() => {
     const original = Storage.prototype.setItem
@@ -33,7 +34,7 @@ test('storage write failure keeps in-memory exercise and offers successful retry
 })
 
 test('export failure uses the same button for retry', async ({ page }) => {
-  await page.goto('/#/parent')
+  await page.goto('./#/parent')
   await page.getByRole('heading', { name: '家长设置' }).waitFor()
   await page.evaluate(() => {
     const original = URL.createObjectURL

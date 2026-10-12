@@ -60,8 +60,7 @@ for index, word in enumerate(ordered):
         'sources': ['ogden-wiktionary', 'project-text', 'kokoro'],
     })
 (root / 'content/words.json').write_text(json.dumps(words, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-(root / 'public/data').mkdir(parents=True, exist_ok=True)
-(root / 'public/data/words.json').write_text(json.dumps(words, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+(root / 'tmp').mkdir(parents=True, exist_ok=True)
 (root / 'tmp/support-missing.json').write_text(json.dumps(sorted(unknown), indent=2) + '\n', encoding='utf-8')
 print(f'{len(words)} words, 170 lessons; {len(unknown)} supporting forms need explanations')
 if unknown:

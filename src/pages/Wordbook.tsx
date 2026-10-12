@@ -25,12 +25,14 @@ export function Wordbook({ visible, wordId }: { visible: boolean; wordId?: strin
     return () => { previous.current = false; window.removeEventListener('scroll', record) }
   }, [browsing])
   useEffect(() => { if (visible && wordId && byId.has(wordId)) store.dispatch({ type: 'peek', wordId }) }, [visible, wordId])
+  // Keep browsing state between routes without rebuilding the hidden list.
+  if (!visible) return null
   const current = wordId && byId.get(wordId)
   const active = state.session?.phase === 'active'
   const reviewTarget = active && state.session?.mode === 'review' && !state.session.settled ? state.session.wordIds[state.session.index] : null
   if (visible && current) return <main className="word-detail page" id="main"><a href="#/book" className="text-button back-link"><Icon name="back"/>返回词语书</a><div className="detail-heading"><span>第 {current.lessonId} 课</span><span className={`status-tag ${statusOf(state.words[current.id])}`}>{STATUS_LABELS[statusOf(state.words[current.id])]}</span></div><section className="detail-panel"><WordCard word={current}/><button className="button primary full" onClick={() => { store.dispatch({ type: 'peek', wordId: current.id }); navigate(`/practice/${current.id}`) }}>练练这个词<Icon name="arrow"/></button></section>{active && <a className="text-button resume-link" href="#/learn">继续正在学的内容<Icon name="arrow"/></a>}</main>
   const filtered = words.filter(word => (!query.trim() || `${word.word} ${word.meaning}`.toLowerCase().includes(query.trim().toLowerCase())) && (!status || statusOf(state.words[word.id]) === status) && (!lesson || word.lessonId === Number(lesson)))
-  return <main className="wordbook page" id={visible ? 'main' : undefined} hidden={!visible}>
+  return <main className="wordbook page" id="main">
     <a href="#/" className="text-button back-link"><Icon name="back"/>首页</a>
     <div className="page-heading"><h1>我的词语书</h1><Icon name="book" size={40}/></div>
     {active && <a className="resume-banner" href="#/learn"><span>继续学</span><Icon name="arrow" size={18}/></a>}

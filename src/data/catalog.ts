@@ -15,7 +15,9 @@ export function initializeCatalog(data: unknown): void {
   words.forEach(word => byId.set(word.id, word))
   lessonIds.splice(0, lessonIds.length, ...new Set(words.map(word => word.lessonId)))
 }
-export const lessonWords = (lessonId: number) => words.filter(word => word.lessonId === lessonId)
+// The validated catalogue contains exactly five consecutive words per lesson.
+export const lessonWords = (lessonId: number) => Number.isInteger(lessonId) && lessonId > 0
+  ? words.slice((lessonId - 1) * 5, lessonId * 5) : []
 export const getWord = (id: string): Word => {
   const word = byId.get(id)
   if (!word) throw new Error(`Unknown word: ${id}`)
