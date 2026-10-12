@@ -173,6 +173,39 @@ test('parent has one export action with 850 UTF-8 rows', async ({ page }) => {
   await expect(page.locator('.export-status')).toContainText('已发起下载')
 })
 
+test('completed review spelling survives a wordbook visit and reload', async ({ page }) => {
+  const initial = freshState()
+  initial.settings.onboardingSeen = true
+  initial.settings.spokenGuidance = false
+  initial.words['ogden-apple'] = { teaching: 'completed', reviewStep: 1, lastReviewedOn: '2026-01-01', nextReviewOn: '2026-01-04' }
+  await page.addInitScript(({ key, state }) => {
+    if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(state))
+  }, { key: STORAGE_KEY, state: initial })
+  await page.goto('/')
+  await page.getByRole('button', { name: '复习一下', exact: true }).click()
+  await hear(page)
+  await page.getByRole('textbox').pressSequentially('apple')
+  await expect(page.getByText('答对了', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: '暂停', exact: true }).click()
+  await page.getByRole('link', { name: '翻翻词语书', exact: true }).click()
+  await page.getByRole('searchbox').fill('apple')
+  await page.locator('.word-row').click()
+  await expect(page.getByRole('heading', { name: 'apple', exact: true })).toBeVisible()
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'apple', exact: true })).toBeVisible()
+  await page.getByRole('link', { name: '继续正在学的内容' }).click()
+  await expect(page.getByText('答对了', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: '继续', exact: true }).click()
+  await hear(page)
+  await page.getByRole('button', { name: '苹果', exact: true }).click()
+  await page.getByRole('button', { name: '继续', exact: true }).click()
+  await page.getByRole('button', { name: '苹果', exact: true }).click()
+  const saved = await stored(page)
+  expect(saved.words['ogden-apple'].reviewStep).toBe(0)
+  expect(saved.words['ogden-apple'].nextReviewOn).toBe(addDays(localDay(), 1))
+  expect(saved.session.retry).toBe(1)
+})
+
 test('damaged storage remains intact and the application blocks overwrites', async ({ page }) => {
   await page.addInitScript(key => localStorage.setItem(key, '{broken'), STORAGE_KEY)
   await page.goto('/')

@@ -71,6 +71,17 @@ export function parseState(raw: string | null): AppState {
   }
   if (started > 1) return invalid()
   const state = value as unknown as AppState
+  // Repair only the old wordbook-peek bug: completed spelling lost its input.
+  // The full validator still checks this session before any state is accepted.
+  const session = state.session
+  if (session?.mode === 'review' && session.phase === 'active' && session.question === 'spell'
+    && session.input === '' && session.feedback === null && session.heard === true && session.settled === false
+    && session.flags?.spell?.done === true
+    && ['read', 'listen', 'spell'].every(quiz => object(session.flags[quiz as keyof Session['flags']]) && session.flags[quiz as keyof Session['flags']].hint === true)
+    && Array.isArray(session.wordIds) && integer(session.index, 0, session.wordIds.length - 1) && byId.has(session.wordIds[session.index])) {
+    session.input = getWord(session.wordIds[session.index]).word.toLowerCase().replace(/[^a-z]/g, '')
+    session.feedback = 'correct'
+  }
   if (value.session !== null && !validSession(value.session, state)) return invalid()
   if (started && (!state.session || state.session.mode !== 'lesson' || state.session.settled || state.words[state.session.wordIds[state.session.index]]?.teaching !== 'started')) return invalid()
   return state

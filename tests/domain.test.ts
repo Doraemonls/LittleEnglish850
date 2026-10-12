@@ -104,6 +104,20 @@ describe('calendar and review', () => {
     expect(state.session!.retry).toBe(1)
     expect(act(state, { type: 'answer', choice: 'ogden-apple' }, '2026-10-10').words).toEqual(state.words)
   })
+  it('keeps completed spelling readable after viewing the wordbook and preserves the hinted outcome', () => {
+    let state = freshState()
+    state.words['ogden-apple'] = learned({ reviewStep: 2, lastReviewedOn: '2026-09-30', nextReviewOn: day })
+    state = act(state, { type: 'start', mode: 'review' })
+    state = act(state, { type: 'heard' })
+    for (const value of 'apple') state = act(state, { type: 'spell', edit: { kind: 'insert', value } })
+    state = act(state, { type: 'peek', wordId: 'ogden-apple' })
+    expect(state.session!.input).toBe('apple')
+    state = parseState(JSON.stringify(state))
+    expect(Object.values(state.session!.flags).every(flag => flag.hint)).toBe(true)
+    state = finishQuestions(state)
+    expect(state.words['ogden-apple']).toEqual(learned({ lastReviewedOn: day, nextReviewOn: '2026-10-09' }))
+    expect(state.session!.retry).toBe(1)
+  })
   it('opening the current unsettled review answer counts as a hint', () => {
     let state = freshState()
     state.words['ogden-apple'] = learned({ nextReviewOn: day })
@@ -170,6 +184,30 @@ describe('formal session and derived progress', () => {
 })
 
 describe('storage and TSV', () => {
+  it('recovers the old completed-spelling peek snapshot without changing word progress', () => {
+    let state = freshState()
+    state.words['ogden-apple'] = learned({ nextReviewOn: day })
+    state = act(state, { type: 'start', mode: 'review' })
+    state = act(state, { type: 'heard' })
+    for (const value of 'apple') state = act(state, { type: 'spell', edit: { kind: 'insert', value } })
+    state = act(state, { type: 'peek', wordId: 'ogden-apple' })
+    state.session!.input = ''
+    state.session!.feedback = null
+    let raw = JSON.stringify(state)
+    const original = raw
+    const storage = createStore({ getItem: () => raw, setItem: (_, value) => { raw = value } })
+    expect(storage.getSnapshot().status).toBe('saved')
+    expect(storage.getSnapshot().state.words).toEqual(state.words)
+    expect(storage.getSnapshot().state.session).toMatchObject({ input: 'apple', feedback: 'correct', flags: { spell: { done: true, hint: true } } })
+    expect(raw).toBe(original)
+    storage.dispatch({ type: 'next' }, day)
+    expect(parseState(raw).session!.question).toBe('listen')
+    state.session!.flags.read.hint = false
+    expect(() => parseState(JSON.stringify(state))).toThrow()
+    state.session!.flags.read.hint = true
+    state.session!.completed = 5
+    expect(() => parseState(JSON.stringify(state))).toThrow()
+  })
   it.each(['{bad', JSON.stringify({ schemaVersion: 2 }), JSON.stringify({ ...freshState(), contentVersion: 'other' }), JSON.stringify({ ...freshState(), words: { mystery: learned() } })])('rejects unreadable and incompatible data %s', raw => {
     expect(() => parseState(raw)).toThrow()
     let original = raw

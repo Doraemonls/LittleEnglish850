@@ -131,7 +131,7 @@ export function reduce(state: AppState, action: Action, day: string, random = Ma
     const session = structuredClone(old)
     // Browsing an answer disqualifies this word's whole round, including future questions.
     Object.values(session.flags).forEach(flag => { flag.hint = true })
-    if (session.question === 'spell') { session.input = ''; session.feedback = null }
+    if (session.question === 'spell' && !session.flags.spell.done) { session.input = ''; session.feedback = null }
     return { ...state, session }
   }
   const session = stepSession(old, action, random)
