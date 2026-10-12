@@ -1,0 +1,139 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1300" viewBox="0 0 1840 1300">
+  <title>单词学习：先理解，再辨认与拼写</title>
+  <desc>一张词卡连接三种练习；例句从第一课开始出现。</desc>
+  <rect width="1840" height="1300" fill="#F5F6F3" />
+  <text x="56" y="28" font-size="16" font-family="Arial, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">LITTLE ENGLISH 850   /   UX V1.0   /   2026.10.10</text>
+  <text x="56" y="62" font-size="38" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">03  单词学习：先理解，再辨认与拼写</text>
+  <text x="56" y="113" font-size="21" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">一张词卡连接三种练习；例句从第一课开始出现。</text>
+  <rect x="56.0" y="164" width="393.0" height="46" rx="10" fill="#E9EDE7" stroke="none" stroke-width="1" />
+  <text x="208.5" y="177" font-size="18" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">W1 看词卡</text>
+  <polyline points="459.0,187 491.0,187" fill="none" stroke="#59665F" stroke-width="2" />
+  <polyline points="483.0,182 491.0,187 483.0,192" fill="none" stroke="#59665F" stroke-width="2" />
+  <rect x="501.0" y="164" width="393.0" height="46" rx="10" fill="#E9EDE7" stroke="none" stroke-width="1" />
+  <text x="635.5" y="177" font-size="18" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">W2 看词选意思</text>
+  <polyline points="904.0,187 936.0,187" fill="none" stroke="#59665F" stroke-width="2" />
+  <polyline points="928.0,182 936.0,187 928.0,192" fill="none" stroke="#59665F" stroke-width="2" />
+  <rect x="946.0" y="164" width="393.0" height="46" rx="10" fill="#E9EDE7" stroke="none" stroke-width="1" />
+  <text x="1080.5" y="177" font-size="18" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">W3 听音选意思</text>
+  <polyline points="1349.0,187 1381.0,187" fill="none" stroke="#59665F" stroke-width="2" />
+  <polyline points="1373.0,182 1381.0,187 1373.0,192" fill="none" stroke="#59665F" stroke-width="2" />
+  <rect x="1391.0" y="164" width="393.0" height="46" rx="10" fill="#E9EDE7" stroke="none" stroke-width="1" />
+  <text x="1534.5" y="177" font-size="18" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">W4 听音拼写</text>
+  <text x="56" y="231" font-size="18" font-family="Arial, sans-serif" font-weight="700" fill="#29493D" dominant-baseline="text-before-edge">W1</text>
+  <text x="98" y="228" font-size="23" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">词卡</text>
+  <rect x="56" y="270" width="370" height="790" rx="20" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="2" />
+  <text x="78" y="294" font-size="19" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">单词 2 / 5</text>
+  <text x="370.0" y="295" font-size="17" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">暂停</text>
+  <polyline points="76,331 406,331" fill="none" stroke="#E9EDE7" stroke-width="2" />
+  <text x="184.0" y="356" font-size="48" font-family="Arial, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">book</text>
+  <rect x="78" y="425" width="326" height="48" rx="10" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="1" />
+  <text x="211.0" y="438.0" font-size="20" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">听单词</text>
+  <rect x="78" y="496" width="326" height="128" rx="12" fill="#E9EDE7" stroke="none" stroke-width="1" />
+  <rect x="201.0" y="526.0" width="78" height="66" rx="3" fill="#FFFFFF" stroke="#59665F" stroke-width="2" />
+  <polyline points="217.0,528.0 217.0,591.0" fill="none" stroke="#59665F" stroke-width="2" />
+  <polyline points="231.0,546.0 264.0,546.0" fill="none" stroke="#A8B1AA" stroke-width="2" />
+  <polyline points="231.0,560.0 264.0,560.0" fill="none" stroke="#A8B1AA" stroke-width="2" />
+  <polyline points="231.0,574.0 264.0,574.0" fill="none" stroke="#A8B1AA" stroke-width="2" />
+  <text x="227.0" y="643" font-size="28" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">书</text>
+  <text x="159.0" y="710" font-size="25" font-family="Arial, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">This is a book.</text>
+  <text x="178.0" y="749" font-size="21" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">这是一本书。</text>
+  <rect x="78" y="802" width="326" height="48" rx="10" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="1" />
+  <text x="211.0" y="815.0" font-size="20" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">听句子</text>
+  <rect x="78" y="940" width="326" height="52" rx="10" fill="#29493D" stroke="none" stroke-width="1" />
+  <text x="201.0" y="955.0" font-size="20" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#FFFFFF" dominant-baseline="text-before-edge">开始练习</text>
+  <text x="508" y="231" font-size="18" font-family="Arial, sans-serif" font-weight="700" fill="#29493D" dominant-baseline="text-before-edge">W2</text>
+  <text x="550" y="228" font-size="23" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">看词选意思</text>
+  <rect x="508" y="270" width="370" height="790" rx="20" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="2" />
+  <text x="530" y="294" font-size="19" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">单词 2 / 5</text>
+  <text x="822.0" y="295" font-size="17" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">暂停</text>
+  <polyline points="528,331 858,331" fill="none" stroke="#E9EDE7" stroke-width="2" />
+  <text x="530" y="359" font-size="24" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">这个词是什么意思？</text>
+  <text x="640.5" y="421" font-size="44" font-family="Arial, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">book</text>
+  <rect x="530" y="528" width="326" height="84" rx="10" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="1" />
+  <rect x="544" y="540" width="62" height="60" rx="8" fill="#E9EDE7" stroke="none" stroke-width="1" />
+  <text x="565.0" y="556" font-size="20" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">书</text>
+  <text x="626" y="557" font-size="22" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">一本书</text>
+  <rect x="530" y="632" width="326" height="84" rx="10" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="1" />
+  <rect x="544" y="644" width="62" height="60" rx="8" fill="#E9EDE7" stroke="none" stroke-width="1" />
+  <text x="565.0" y="660" font-size="20" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">杯</text>
+  <text x="626" y="661" font-size="22" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">一个杯子</text>
+  <rect x="530" y="736" width="326" height="84" rx="10" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="1" />
+  <rect x="544" y="748" width="62" height="60" rx="8" fill="#E9EDE7" stroke="none" stroke-width="1" />
+  <text x="555.0" y="764" font-size="20" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">钥匙</text>
+  <text x="626" y="765" font-size="22" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">一把钥匙</text>
+  <text x="648.0" y="878" font-size="18" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">选一个意思</text>
+  <rect x="530" y="952" width="326" height="52" rx="10" fill="#E9EDE7" stroke="none" stroke-width="1" />
+  <text x="673.0" y="967.0" font-size="20" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">继续</text>
+  <text x="960" y="231" font-size="18" font-family="Arial, sans-serif" font-weight="700" fill="#29493D" dominant-baseline="text-before-edge">W3</text>
+  <text x="1002" y="228" font-size="23" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">听音选意思</text>
+  <rect x="960" y="270" width="370" height="790" rx="20" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="2" />
+  <text x="982" y="294" font-size="19" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">单词 2 / 5</text>
+  <text x="1274.0" y="295" font-size="17" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">暂停</text>
+  <polyline points="980,331 1310,331" fill="none" stroke="#E9EDE7" stroke-width="2" />
+  <text x="982" y="359" font-size="25" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">听一听，选意思</text>
+  <rect x="982" y="430" width="326" height="52" rx="10" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="1" />
+  <text x="1115.0" y="445.0" font-size="20" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">听单词</text>
+  <rect x="982" y="528" width="326" height="84" rx="10" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="1" />
+  <rect x="996" y="540" width="62" height="60" rx="8" fill="#E9EDE7" stroke="none" stroke-width="1" />
+  <text x="1017.0" y="556" font-size="20" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">书</text>
+  <text x="1078" y="557" font-size="22" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">一本书</text>
+  <rect x="982" y="632" width="326" height="84" rx="10" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="1" />
+  <rect x="996" y="644" width="62" height="60" rx="8" fill="#E9EDE7" stroke="none" stroke-width="1" />
+  <text x="1017.0" y="660" font-size="20" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">杯</text>
+  <text x="1078" y="661" font-size="22" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">一个杯子</text>
+  <rect x="982" y="736" width="326" height="84" rx="10" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="1" />
+  <rect x="996" y="748" width="62" height="60" rx="8" fill="#E9EDE7" stroke="none" stroke-width="1" />
+  <text x="1007.0" y="764" font-size="20" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">钥匙</text>
+  <text x="1078" y="765" font-size="22" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">一把钥匙</text>
+  <text x="1073.0" y="878" font-size="18" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">先听声音，再选择</text>
+  <rect x="982" y="952" width="326" height="52" rx="10" fill="#E9EDE7" stroke="none" stroke-width="1" />
+  <text x="1125.0" y="967.0" font-size="20" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">继续</text>
+  <text x="1412" y="231" font-size="18" font-family="Arial, sans-serif" font-weight="700" fill="#29493D" dominant-baseline="text-before-edge">W4</text>
+  <text x="1454" y="228" font-size="23" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">听音拼写</text>
+  <rect x="1412" y="270" width="370" height="790" rx="20" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="2" />
+  <text x="1434" y="294" font-size="19" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">单词 2 / 5</text>
+  <text x="1726.0" y="295" font-size="17" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">暂停</text>
+  <polyline points="1432,331 1762,331" fill="none" stroke="#E9EDE7" stroke-width="2" />
+  <text x="1434" y="359" font-size="24" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">听一听，拼出单词</text>
+  <rect x="1434" y="428" width="326" height="52" rx="10" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="1" />
+  <text x="1567.0" y="443.0" font-size="20" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">听单词</text>
+  <rect x="1463.0" y="538" width="58" height="64" rx="8" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="2" />
+  <text x="1482.5" y="548" font-size="34" font-family="Arial, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">b</text>
+  <rect x="1533.0" y="538" width="58" height="64" rx="8" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="2" />
+  <text x="1552.5" y="548" font-size="34" font-family="Arial, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">o</text>
+  <rect x="1603.0" y="538" width="58" height="64" rx="8" fill="#FFFFFF" stroke="#29493D" stroke-width="2" />
+  <rect x="1673.0" y="538" width="58" height="64" rx="8" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="2" />
+  <text x="1523.5" y="624" font-size="18" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">已经写了 2 个字母</text>
+  <rect x="1434" y="672" width="326" height="44" rx="10" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="1" />
+  <text x="1557.0" y="683.0" font-size="20" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">查看提示</text>
+  <rect x="1434" y="748" width="326" height="52" rx="10" fill="#E9EDE7" stroke="none" stroke-width="1" />
+  <text x="1577.0" y="763.0" font-size="20" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">继续</text>
+  <rect x="1434" y="838" width="326" height="190" rx="12" fill="#E9EDE7" stroke="none" stroke-width="1" />
+  <text x="1543.0" y="856" font-size="18" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">系统英文键盘</text>
+  <text x="1508.5" y="896" font-size="19" font-family="Arial, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">Q W E R T Y U I O P</text>
+  <text x="1519.5078125" y="935" font-size="19" font-family="Arial, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">A S D F G H J K L</text>
+  <text x="1497.0" y="974" font-size="19" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#24312D" dominant-baseline="text-before-edge">Z X C V B N M     退格</text>
+  <polyline points="56,1090 1784,1090" fill="none" stroke="#A8B1AA" stroke-width="1" />
+  <text x="56" y="1111" font-size="21" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">图、词义与声音对应</text>
+  <text x="56" y="1150" font-size="18" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">单词和句子分别播放；孩子可以反复听，再开</text>
+  <text x="56" y="1179" font-size="18" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">始练习。</text>
+  <text x="508" y="1111" font-size="21" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">整个选项都可点</text>
+  <text x="508" y="1150" font-size="18" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">图片与简短情境帮助理解，答错后解释意思再</text>
+  <text x="508" y="1179" font-size="18" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">重试。</text>
+  <text x="960" y="1111" font-size="21" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">听辨前隐藏英文</text>
+  <text x="960" y="1150" font-size="18" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">标题只显示题目和进度；选项中不出现目标英</text>
+  <text x="960" y="1179" font-size="18" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">文。</text>
+  <text x="1412" y="1111" font-size="21" font-family="Microsoft YaHei, sans-serif" font-weight="700" fill="#24312D" dominant-baseline="text-before-edge">每输入一字母就检查</text>
+  <text x="1412" y="1150" font-size="18" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">正确部分保留；完整拼对后才启用继续按钮。</text>
+  <text x="56" y="1267" font-size="16" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">线框图 · 示例数据与示意图片 · 详细交互见 UX_DESIGN.md</text>
+  <text x="1687" y="1267" font-size="14" font-family="Arial, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">V1.0</text>
+  <rect x="257" y="283" width="92" height="44" rx="8" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="1" />
+  <text x="276" y="296" font-size="17" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">听题目</text>
+  <rect x="709" y="283" width="92" height="44" rx="8" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="1" />
+  <text x="728" y="296" font-size="17" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">听题目</text>
+  <rect x="1161" y="283" width="92" height="44" rx="8" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="1" />
+  <text x="1180" y="296" font-size="17" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">听题目</text>
+  <rect x="1613" y="283" width="92" height="44" rx="8" fill="#FFFFFF" stroke="#A8B1AA" stroke-width="1" />
+  <text x="1632" y="296" font-size="17" font-family="Microsoft YaHei, sans-serif" font-weight="400" fill="#59665F" dominant-baseline="text-before-edge">听题目</text>
+</svg>

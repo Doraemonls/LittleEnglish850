@@ -1,0 +1,18 @@
+# Application dependencies and builds
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# Local generation workspace and logs
+tmp/
+.cache/
+*.log
+__pycache__/
+*.pyc
+
+# Local service credentials
+.env
+.env.*
+!.env.example

@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.mp3 binary
+*.png binary
+*.pdf binary
+# Empty final TSV fields are meaningful, not accidental trailing whitespace.
+*.tsv whitespace=-blank-at-eol
