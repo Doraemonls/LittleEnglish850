@@ -63,7 +63,7 @@ The release candidate fixes completed review spelling becoming unreadable after 
 
 Work is prepared on `release/v0.1.0`; annotated candidate tags follow `v0.1.0-rc.N`. Keep package versions and `CHANGELOG.md` aligned. Source, authored content, provenance and final MP3 files belong in Git. Dependencies, builds, generated runtime JSON, models, temporary files and credentials are ignored.
 
-The `Verify release` workflow uses GitHub-hosted Ubuntu and Node 24, runs checks against the production subdirectory, and uploads `dist/` as an artifact. Repository Actions access and the Git credential's `repo` / `workflow` scopes were verified during preparation. This workflow has read-only repository permissions and does not publish Pages.
+The `Verify release` workflow uses GitHub-hosted Ubuntu 24.04 and Node 24, runs checks against the production subdirectory, and uploads `dist/` as an artifact. A PulseAudio virtual output lets headless Firefox play the actual MP3 files on a runner without speakers. Repository Actions access and the Git credential's `repo` / `workflow` scopes were verified during preparation. This workflow has read-only repository permissions and does not publish Pages.
 
 When ready to publish:
 
