@@ -4,6 +4,7 @@ import { useToday } from '../app/useToday'
 import { localDay, mainAction } from '../domain/progress'
 import { ProgressBar } from '../components/ProgressBar'
 import { Icon } from '../components/Icon'
+import { BookIllustration } from '../components/BookIllustration'
 
 export function Home() {
   const { state } = useApp()
@@ -18,10 +19,12 @@ export function Home() {
     navigate('/learn')
   }
   return <main className="home page" id="main">
-    <div className="home-book" aria-hidden="true"><div className="book-shadow"/><div className="book-left"><span>hello</span><i/><i/></div><div className="book-right"><span>🍎</span><small>apple</small></div></div>
+    <div className="home-card">
+    <BookIllustration/>
     <h1>{headings[action]}</h1>
     <section className="home-progress" aria-label="我的单词"><h2>我的单词</h2><ProgressBar state={state}/></section>
     <button className="button primary home-start" onClick={start}>{labels[action]}<Icon name="arrow"/></button>
     {action !== 'wordbook' && <a className="home-wordbook" href="#/book"><Icon name="book"/>翻翻词语书<Icon name="arrow" size={18}/></a>}
+    </div>
   </main>
 }

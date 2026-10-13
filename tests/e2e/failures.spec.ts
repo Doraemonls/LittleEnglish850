@@ -22,15 +22,15 @@ test('storage write failure keeps in-memory exercise and offers successful retry
     ;(window as typeof window & { restoreStorage?: () => void }).restoreStorage = () => { Storage.prototype.setItem = original }
   })
   await page.getByRole('button', { name: '开始学单词', exact: true }).click()
-  await page.getByRole('button', { name: '跳过', exact: true }).click()
-  await expect(page.getByRole('alert')).toContainText('这次进度还没保存')
-  await page.getByRole('button', { name: '试一试', exact: true }).click()
+  await page.getByRole('button', { name: 'Skip', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText('Progress not saved')
+  await page.getByRole('button', { name: 'Try it', exact: true }).click()
   await page.getByRole('button', { name: '苹果', exact: true }).click()
   await page.evaluate(() => (window as typeof window & { restoreStorage?: () => void }).restoreStorage?.())
-  await page.getByRole('button', { name: '重试保存' }).click()
+  await page.getByRole('button', { name: 'Save again' }).click()
   await expect(page.getByRole('alert')).toHaveCount(0)
   await page.reload()
-  await expect(page.getByText('答对了', { exact: true })).toBeVisible()
+  await expect(page.getByText('Correct!', { exact: true })).toBeVisible()
 })
 
 test('export failure uses the same button for retry', async ({ page }) => {

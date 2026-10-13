@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import type { Session } from '../data/types'
 import type { SpellEdit } from '../domain/session'
 
-export function SpellingInput({ answer, session, onEdit }: { answer: string; session: Session; onEdit: (edit: SpellEdit) => void }) {
+export function SpellingInput({ session, onEdit }: { session: Session; onEdit: (edit: SpellEdit) => void }) {
   const input = useRef<HTMLInputElement>(null)
   const [composition, setComposition] = useState<string | null>(null)
   const composing = useRef(false)
@@ -41,15 +41,11 @@ export function SpellingInput({ answer, session, onEdit }: { answer: string; ses
     process(element.value, native.inputType)
     element.value = session.input
   }
-  let letterIndex = 0
+  // Keep the answer out of the rendered UI until the child has typed it.
+  // The word's length and domain validation remain independent of the input layout.
   return <div className="spelling-area">
-    <div className="letter-slots" aria-hidden="true">{[...answer].map((char, index) => {
-      if (!/[a-z]/i.test(char)) return <span className="separator" key={index}>{char}</span>
-      const letter = session.input[letterIndex++]
-      return <span key={index} className={`letter-slot ${letter ? 'filled' : ''}`}>{letter || ''}</span>
-    })}</div>
-    <label className="sr-only" htmlFor="spelling">输入你听到的单词</label>
-    <input ref={input} id="spelling" className="spelling-input" value={composition ?? session.input} onChange={() => {}} onInput={onInput}
+    <label className="sr-only" htmlFor="spelling">Type the word you hear</label>
+    <input ref={input} id="spelling" className="spelling-input" aria-invalid={session.feedback === 'retry' || session.feedback === 'letters'} value={composition ?? session.input} onChange={() => {}} onInput={onInput}
       onBeforeInput={event => {
         const native = event.nativeEvent as InputEvent
         if (!composing.current && ['insertFromPaste', 'insertFromDrop', 'insertReplacementText'].includes(native.inputType)) { event.preventDefault(); edit({ kind: 'reject' }) }

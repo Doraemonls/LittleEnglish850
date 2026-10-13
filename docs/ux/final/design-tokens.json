@@ -1,0 +1,254 @@
+{
+  "description": "Sunny Memphis final design: vivid accents, tinted backgrounds and regular-weight sentence prompts. Implemented in src/app/styles.css.",
+  "primitive": {
+    "color": {
+      "ink": {
+        "$type": "color",
+        "$value": "#29424A"
+      },
+      "white": {
+        "$type": "color",
+        "$value": "#FFFFFF"
+      },
+      "canvas": {
+        "$type": "color",
+        "$value": "#FFF0C2"
+      },
+      "yellow": {
+        "$type": "color",
+        "$value": "#FFC938"
+      },
+      "sky": {
+        "$type": "color",
+        "$value": "#DCF2FF"
+      },
+      "blue": {
+        "$type": "color",
+        "$value": "#68BFEA"
+      },
+      "blueInk": {
+        "$type": "color",
+        "$value": "#275D7D"
+      },
+      "green": {
+        "$type": "color",
+        "$value": "#287A55"
+      },
+      "mint": {
+        "$type": "color",
+        "$value": "#ACDF82"
+      },
+      "red": {
+        "$type": "color",
+        "$value": "#F47E68"
+      },
+      "error": {
+        "$type": "color",
+        "$value": "#A54E41"
+      },
+      "border": {
+        "$type": "color",
+        "$value": "#C6DAD9"
+      },
+      "control": {
+        "$type": "color",
+        "$value": "#697E83"
+      },
+      "muted": {
+        "$type": "color",
+        "$value": "#536D75"
+      },
+      "shadow": {
+        "$type": "color",
+        "$value": "#29424A"
+      },
+      "leafCanvas": {
+        "$type": "color",
+        "$value": "#EDF8DE"
+      }
+    }
+  },
+  "semantic": {
+    "canvas": "{primitive.color.canvas}",
+    "surface": "{primitive.color.white}",
+    "learningCanvas": "{primitive.color.sky}",
+    "wordbookCanvas": "{primitive.color.leafCanvas}",
+    "surfaceTint": "{primitive.color.sky}",
+    "text": "{primitive.color.ink}",
+    "textSecondary": "{primitive.color.muted}",
+    "primaryAction": "{primitive.color.yellow}",
+    "audioFill": "{primitive.color.blue}",
+    "linkAndFocus": "{primitive.color.blueInk}",
+    "panelBorder": "{primitive.color.border}",
+    "controlBorder": "{primitive.color.control}",
+    "progressMastered": "{primitive.color.yellow}",
+    "progressLearned": "{primitive.color.green}",
+    "progressLearning": "{primitive.color.mint}",
+    "feedbackErrorBorder": "{primitive.color.error}"
+  },
+  "component": {
+    "button": {
+      "fill": "{semantic.primaryAction}",
+      "text": "{semantic.text}",
+      "border": "{semantic.controlBorder}",
+      "borderWidth": 1.25,
+      "radius": 14,
+      "minHeight": 44
+    },
+    "card": {
+      "fill": "{semantic.surface}",
+      "border": "{semantic.panelBorder}",
+      "borderWidth": 1,
+      "radius": 16
+    },
+    "shadow": {
+      "color": "{primitive.color.shadow}",
+      "opacity": 0.07,
+      "offsetX": 0,
+      "offsetY": 3,
+      "svgStandardDeviation": 5
+    },
+    "focus": {
+      "color": "{semantic.linkAndFocus}",
+      "outlineWidth": 3,
+      "gap": 4
+    },
+    "body": {
+      "fontFamily": "Segoe UI, Microsoft YaHei, PingFang SC, system-ui, sans-serif",
+      "fontSize": 18,
+      "lineHeight": 1.65
+    },
+    "touchTarget": {
+      "minWidth": 44,
+      "minHeight": 44
+    },
+    "sentenceAudio": {
+      "radius": 12,
+      "fontWeight": 400,
+      "fontSize": 22,
+      "fill": "{semantic.surfaceTint}",
+      "target": "whole English sentence row including speaker icon",
+      "visibleLabel": "sentence text only",
+      "accessibleLabel": "Play sentence: {sentence}",
+      "activation": [
+        "tap",
+        "click",
+        "Enter",
+        "Space"
+      ],
+      "minHeight": 60
+    },
+    "learningPrompt": {
+      "fontWeight": 400,
+      "fontSize": "23–27",
+      "text": "{semantic.text}"
+    },
+    "answerChoice": {
+      "label": "Chinese meaning",
+      "emojiSize": 25,
+      "emojiSource": "word.illustration",
+      "emojiPosition": "after Chinese label",
+      "audio": "separate Chinese pronunciation button",
+      "questionLanguage": "English"
+    },
+    "decoration": {
+      "desktopGroups": "4–6",
+      "mobileGroups": "2–5",
+      "emojiMaxPerViewport": 2,
+      "emojiSize": "16–28",
+      "emojiOpacity": 1,
+      "dotDiameter": "6–14",
+      "positioning": "fixed per layout, deliberately scattered",
+      "motion": "none",
+      "pointerEvents": "none",
+      "ariaHidden": true,
+      "questions": "abstract shapes only, outside task panel"
+    }
+  },
+  "contrast": {
+    "text": [
+      {
+        "foreground": "ink",
+        "background": "white",
+        "ratio": 10.65
+      },
+      {
+        "foreground": "ink",
+        "background": "canvas",
+        "ratio": 9.38
+      },
+      {
+        "foreground": "ink",
+        "background": "sky",
+        "ratio": 9.22
+      },
+      {
+        "foreground": "ink",
+        "background": "leafCanvas",
+        "ratio": 9.67
+      },
+      {
+        "foreground": "ink",
+        "background": "yellow",
+        "ratio": 6.93
+      },
+      {
+        "foreground": "ink",
+        "background": "blue",
+        "ratio": 5.19
+      },
+      {
+        "foreground": "ink",
+        "background": "mint",
+        "ratio": 6.91
+      },
+      {
+        "foreground": "blueInk",
+        "background": "white",
+        "ratio": 7.12
+      },
+      {
+        "foreground": "blueInk",
+        "background": "sky",
+        "ratio": 6.17
+      },
+      {
+        "foreground": "green",
+        "background": "white",
+        "ratio": 5.24
+      },
+      {
+        "foreground": "white",
+        "background": "green",
+        "ratio": 5.24
+      },
+      {
+        "foreground": "muted",
+        "background": "canvas",
+        "ratio": 4.85
+      }
+    ],
+    "controlBorderToOuterSurface": [
+      {
+        "foreground": "control",
+        "background": "white",
+        "ratio": 4.27
+      },
+      {
+        "foreground": "control",
+        "background": "canvas",
+        "ratio": 3.76
+      },
+      {
+        "foreground": "control",
+        "background": "sky",
+        "ratio": 3.7
+      },
+      {
+        "foreground": "control",
+        "background": "leafCanvas",
+        "ratio": 3.88
+      }
+    ]
+  }
+}
