@@ -1,4 +1,4 @@
-name: Verify release
+name: Verify and publish
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: verify-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   verify:
@@ -46,6 +46,11 @@ jobs:
           name: little-english-${{ github.sha }}
           path: dist/
           retention-days: 7
+      - name: Prepare tested website for Pages
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: dist/
       - name: Save browser failure evidence
         if: failure()
         uses: actions/upload-artifact@v7.0.2
@@ -54,3 +59,26 @@ jobs:
           path: test-results/
           if-no-files-found: ignore
           retention-days: 7
+
+  deploy:
+    name: Publish GitHub Pages
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6.0.0
+      - name: Publish tested website
+        id: deployment
+        uses: actions/deploy-pages@v5.0.1
