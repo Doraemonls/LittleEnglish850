@@ -1,5 +1,5 @@
 {
-  "description": "Sunny Memphis final design: vivid accents, tinted backgrounds and regular-weight sentence prompts. Implemented in src/app/styles.css.",
+  "description": "Sunny Memphis design: vivid accents, tinted backgrounds and regular-weight sentence prompts. Implemented in src/app/styles.css.",
   "primitive": {
     "color": {
       "ink": {

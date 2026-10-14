@@ -1,6 +1,6 @@
 # Little English 850｜页面与交互设计
 
-2026-10-13 · [Sunny Memphis 最终设计总览](final/index.html) · [视觉与组件说明](final/DESIGN_NOTES.md)
+2026-10-13 · [Sunny Memphis 设计总览](sunny-memphis/index.html) · [视觉与组件说明](sunny-memphis/DESIGN_NOTES.md)
 
 首页连接学习、词语书与家长设置，家长设置连接双语关于页。学习从单词开始，每次只呈现一张词卡或一道题。
 
@@ -25,13 +25,13 @@ flowchart TB
 
 | 图板 | 内容 |
 | --- | --- |
-| [00 视觉方向](final/00-direction.svg) | 明黄、天蓝、绿与珊瑚红；白色阅读区；常规字重句子 |
-| [01 首页](final/01-home.svg) | 桌面与手机、进度和开始入口 |
-| [02 学习](final/02-learning.svg) | 词卡、选意思、听音选择、拼写、句中听读 |
-| [03 词语书](final/03-wordbook.svg) | 列表、详情和课程 |
-| [04 家长设置](final/04-parent.svg) | 统计、声音和导出 |
-| [05 关于](final/05-about.svg) | 中英文内容与顶部标语 |
-| [06 交互](final/06-interactions.svg) | 页面关系及必要反馈 |
+| [00 视觉方向](sunny-memphis/00-direction.svg) | 明黄、天蓝、绿与珊瑚红；白色阅读区；常规字重句子 |
+| [01 首页](sunny-memphis/01-home.svg) | 桌面与手机、进度和开始入口 |
+| [02 学习](sunny-memphis/02-learning.svg) | 词卡、选意思、听音选择、拼写、句中听读 |
+| [03 词语书](sunny-memphis/03-wordbook.svg) | 列表、详情和课程 |
+| [04 家长设置](sunny-memphis/04-parent.svg) | 统计、声音和导出 |
+| [05 关于](sunny-memphis/05-about.svg) | 中英文内容与顶部标语 |
+| [06 交互](sunny-memphis/06-interactions.svg) | 页面关系及必要反馈 |
 
 ## 首页与学习进度
 
