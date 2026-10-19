@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { getWord } from '../data/catalog'
 import type { Session } from '../data/types'
 import type { SpellEdit } from '../domain/session'
 
@@ -8,6 +9,9 @@ export function SpellingInput({ session, onEdit }: { session: Session; onEdit: (
   const composing = useRef(false)
   const justComposed = useRef(false)
   const done = session.flags.spell.done
+  const word = getWord(session.wordIds[session.index])
+  const targetLetters = word.word.toLowerCase().replace(/[^a-z]/g, '')
+  const currentInput = composition ?? session.input
   useEffect(() => { if (session.heard && !done && !session.hintOpen) input.current?.focus() }, [session.heard, session.hintOpen, done])
   useEffect(() => {
     const reveal = () => {
@@ -45,7 +49,7 @@ export function SpellingInput({ session, onEdit }: { session: Session; onEdit: (
   // The word's length and domain validation remain independent of the input layout.
   return <div className="spelling-area">
     <label className="sr-only" htmlFor="spelling">Type the word you hear</label>
-    <input ref={input} id="spelling" className="spelling-input" aria-invalid={session.feedback === 'retry' || session.feedback === 'letters'} value={composition ?? session.input} onChange={() => {}} onInput={onInput}
+    <input ref={input} id="spelling" className="spelling-input" aria-invalid={session.feedback === 'retry' || session.feedback === 'letters'} value={currentInput} onChange={() => {}} onInput={onInput}
       onBeforeInput={event => {
         const native = event.nativeEvent as InputEvent
         if (!composing.current && ['insertFromPaste', 'insertFromDrop', 'insertReplacementText'].includes(native.inputType)) { event.preventDefault(); edit({ kind: 'reject' }) }
@@ -62,5 +66,12 @@ export function SpellingInput({ session, onEdit }: { session: Session; onEdit: (
       }}
       onKeyDown={event => { if (event.key === 'Enter') event.preventDefault() }}
       readOnly={!session.heard || done} autoComplete="off" autoCorrect="off" autoCapitalize="none" spellCheck={false} inputMode="text" lang="en" enterKeyHint="done"/>
+    <div className="letter-slots" aria-hidden="true" onClick={() => input.current?.focus()}>
+      {Array.from({ length: targetLetters.length }).map((_, i) => {
+        const char = currentInput[i]
+        const isCurrent = i === currentInput.length && !done
+        return <span key={i} className={`letter-slot ${char ? 'filled' : ''} ${isCurrent ? 'current' : ''} ${done ? 'done' : ''}`}>{char || ''}</span>
+      })}
+    </div>
   </div>
 }

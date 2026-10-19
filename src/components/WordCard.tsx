@@ -14,8 +14,17 @@ export function WordCard({ word, sentence = true, language = 'zh-CN' }: { word: 
 
 export function Sentence({ word, language = 'zh-CN' }: { word: Word; language?: 'zh-CN' | 'en' }) {
   return <div className="sentence-block">
-    <AudioButton src={word.audio.sentence} label={language === 'en' ? `Play sentence: ${word.sentence}` : `播放例句：${word.sentence}`} text={word.sentence} variant="sentence" language={language}/>
+    <AudioButton src={word.audio.sentence} label={language === 'en' ? `Play sentence: ${word.sentence}` : `播放例句：${word.sentence}`} text={word.sentence} highlight={word.word} variant="sentence" language={language}/>
     <p className="translation" lang="zh-CN">{word.sentenceZh}</p>
-    {word.support.length > 0 && <details className="support"><summary>{language === 'en' ? 'Sentence helpers' : '句子里的小帮手'}</summary><dl>{word.support.map(item => <div key={item.word}><dt lang="en">{item.word}</dt><dd lang="zh-CN">{item.meaning}</dd><AudioButton src={item.audio} label={language === 'en' ? `Listen to ${item.word}` : `听辅助词 ${item.word}`} variant="icon" language={language}/></div>)}</dl></details>}
+    {word.support.length > 0 && <div className="support-chips-wrapper">
+      <span className="support-title">{language === 'en' ? 'Sentence helpers:' : '句中小帮手：'}</span>
+      <div className="support-chips">
+        {word.support.map(item => <div key={item.word} className="support-chip">
+          <strong className="chip-word" lang="en">{item.word}</strong>
+          <span className="chip-meaning" lang="zh-CN">{item.meaning}</span>
+          <AudioButton src={item.audio} label={language === 'en' ? `Listen to ${item.word}` : `听辅助词 ${item.word}`} variant="icon" language={language}/>
+        </div>)}
+      </div>
+    </div>}
   </div>
 }
