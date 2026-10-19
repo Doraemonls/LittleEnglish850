@@ -5,13 +5,16 @@ export function Dialog({ title, children, onClose, initialFocusRef, returnFocusR
   useLayoutEffect(() => {
     const element = ref.current!
     const previous = document.activeElement as HTMLElement | null
+    const initialTarget = initialFocusRef?.current
+    const explicitReturnTarget = returnFocusRef?.current
+    const returnTarget = explicitReturnTarget ?? previous
     element.showModal()
-    initialFocusRef?.current?.focus()
+    initialTarget?.focus()
     return () => {
       element.close()
-      window.requestAnimationFrame(() => {
-        const target = returnFocusRef?.current ?? previous
-        if (target?.isConnected) target.focus()
+      if (returnTarget?.isConnected) returnTarget.focus()
+      if (explicitReturnTarget) window.requestAnimationFrame(() => {
+        if (explicitReturnTarget.isConnected) explicitReturnTarget.focus()
       })
     }
   }, [initialFocusRef, returnFocusRef])
