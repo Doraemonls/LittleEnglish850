@@ -8,9 +8,16 @@ const update = (url: string, status: AudioStatus, message = '') => {
   listeners.forEach(listener => listener())
 }
 
-export function resolveAudioUrl(url: string, voice?: 'xiaoxiao' | 'yunxia'): string {
-  if (voice === 'yunxia' && (url.includes('-meaning.mp3') || url.includes('prompt-'))) {
-    return url.replace('assets/audio/', 'assets/audio/yunxia/')
+export function resolveAudioUrl(url: string, voice: 'xiaoxiao' | 'yunxia' = 'xiaoxiao'): string {
+  const chosenVoice = voice === 'yunxia' ? 'yunxia' : 'xiaoxiao'
+  if (url.includes('-meaning.mp3') || url.includes('prompt-')) {
+    if (url.includes('assets/audio/xiaoxiao/')) {
+      return url.replace('assets/audio/xiaoxiao/', `assets/audio/${chosenVoice}/`)
+    }
+    if (url.includes('assets/audio/yunxia/')) {
+      return url.replace('assets/audio/yunxia/', `assets/audio/${chosenVoice}/`)
+    }
+    return url.replace('assets/audio/', `assets/audio/${chosenVoice}/`)
   }
   return url
 }
@@ -35,9 +42,9 @@ export const audioPlayer = {
     const clear = () => { window.clearTimeout(timeout); element.onended = null; element.onerror = null; element.onplaying = null }
     const fail = () => {
       if (player !== element || finished) return
-      if (resolvedUrl !== url) {
+      if (voice === 'yunxia') {
         finished = true; clear(); element.pause()
-        audioPlayer.play(url, volume, onFinished)
+        audioPlayer.play(url, volume, onFinished, 'xiaoxiao')
         return
       }
       finished = true; clear(); element.pause()

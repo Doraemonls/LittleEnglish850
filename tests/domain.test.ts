@@ -5,6 +5,7 @@ import { addDays, counts, dueWords, lessonStatus, localDay, mainAction, nextLess
 import { createSession, freshState, reduce, spellEdit, stepSession, type Action } from '../src/domain/session'
 import { createStore, parseState, STORAGE_KEY } from '../src/services/storage'
 import { makeExport } from '../src/services/export'
+import { resolveAudioUrl } from '../src/services/audio'
 
 const day = '2026-10-08'
 const learned = (overrides: Partial<WordProgress> = {}): WordProgress => ({ teaching: 'completed', reviewStep: 0, lastReviewedOn: null, nextReviewOn: '2026-10-09', ...overrides })
@@ -258,5 +259,25 @@ describe('storage and TSV', () => {
     expect(lines[1]).toContain(`\t${CONTENT_VERSION}\togden-apple\tapple\t1\t未开始\t0\t\t`)
     expect(lines[1]).toMatch(/2026-10-08T09:08:07[+-]\d{2}:\d{2}/)
     expect(JSON.stringify(state)).toBe(original)
+  })
+})
+
+describe('audio routing', () => {
+  it('routes word meaning audio to the selected voice subfolder', () => {
+    expect(resolveAudioUrl('assets/audio/xiaoxiao/apple-meaning.mp3', 'xiaoxiao')).toBe('assets/audio/xiaoxiao/apple-meaning.mp3')
+    expect(resolveAudioUrl('assets/audio/xiaoxiao/apple-meaning.mp3', 'yunxia')).toBe('assets/audio/yunxia/apple-meaning.mp3')
+    expect(resolveAudioUrl('assets/audio/xiaoxiao/apple-meaning.mp3')).toBe('assets/audio/xiaoxiao/apple-meaning.mp3')
+  })
+
+  it('routes prompts to the selected voice subfolder', () => {
+    expect(resolveAudioUrl('assets/audio/prompt-welcome.mp3', 'xiaoxiao')).toBe('assets/audio/xiaoxiao/prompt-welcome.mp3')
+    expect(resolveAudioUrl('assets/audio/prompt-welcome.mp3', 'yunxia')).toBe('assets/audio/yunxia/prompt-welcome.mp3')
+    expect(resolveAudioUrl('assets/audio/xiaoxiao/prompt-welcome.mp3', 'yunxia')).toBe('assets/audio/yunxia/prompt-welcome.mp3')
+  })
+
+  it('preserves English word, sentence, and support audio paths unchanged', () => {
+    expect(resolveAudioUrl('assets/audio/apple-word.mp3', 'yunxia')).toBe('assets/audio/apple-word.mp3')
+    expect(resolveAudioUrl('assets/audio/apple-sentence.mp3', 'yunxia')).toBe('assets/audio/apple-sentence.mp3')
+    expect(resolveAudioUrl('assets/audio/support-an.mp3', 'yunxia')).toBe('assets/audio/support-an.mp3')
   })
 })

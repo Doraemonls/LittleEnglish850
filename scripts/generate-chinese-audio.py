@@ -5,7 +5,7 @@ Supports dual voices:
 - Alternative: zh-CN-YunxiaNeural (authentic lively child voice)
 
 Outputs:
-- Xiaoxiao: public/assets/audio/*-meaning.mp3, prompt-*.mp3
+- Xiaoxiao: public/assets/audio/xiaoxiao/*-meaning.mp3, prompt-*.mp3
 - Yunxia:   public/assets/audio/yunxia/*-meaning.mp3, prompt-*.mp3
 Updates content/audio-manifest.json.
 """
@@ -24,8 +24,10 @@ import soundfile as sf
 
 root = Path(__file__).resolve().parents[1]
 output_base = root / 'public/assets/audio'
+output_xiaoxiao = output_base / 'xiaoxiao'
 output_yunxia = output_base / 'yunxia'
 output_base.mkdir(parents=True, exist_ok=True)
+output_xiaoxiao.mkdir(parents=True, exist_ok=True)
 output_yunxia.mkdir(parents=True, exist_ok=True)
 
 manifest_path = root / 'content/audio-manifest.json'
@@ -33,7 +35,7 @@ words_path = root / 'content/words.json'
 guidance_path = root / 'content/guidance.json'
 
 VOICES = {
-    'xiaoxiao': {'voice': 'zh-CN-XiaoxiaoNeural', 'dir': output_base, 'prefix': ''},
+    'xiaoxiao': {'voice': 'zh-CN-XiaoxiaoNeural', 'dir': output_xiaoxiao, 'prefix': 'xiaoxiao/'},
     'yunxia': {'voice': 'zh-CN-YunxiaNeural', 'dir': output_yunxia, 'prefix': 'yunxia/'},
 }
 

@@ -35,7 +35,8 @@ for (const word of selected) {
   if (!textOnly) for (const [kind, url] of Object.entries(word.audio)) {
     const path = `public/${url}`
     check(existsSync(path) && statSync(path).size > 500, `${word.id}: missing ${kind} audio`)
-    const meta = manifest[url.split('/').at(-1)]
+    const manifestKey = url.replace(/^assets\/audio\//, '')
+    const meta = manifest[manifestKey]
     check(meta && meta.seconds > .12, `${word.id}: missing audio provenance for ${kind}`)
     if (meta && existsSync(path)) {
       check(meta.text === (kind === 'word' ? word.word : kind === 'sentence' ? word.sentence : word.meaning), `${word.id}: stale ${kind} audio text`)
@@ -46,11 +47,11 @@ for (const word of selected) {
 const guidance = read('content/guidance.json')
 const expectedAudio = new Map()
 for (const word of words) {
-  for (const [kind, url] of Object.entries(word.audio)) expectedAudio.set(url.split('/').at(-1), kind === 'word' ? word.word : kind === 'sentence' ? word.sentence : word.meaning)
-  for (const helper of word.support) if (helper.audio.includes('/support-')) expectedAudio.set(helper.audio.split('/').at(-1), helper.word.toLowerCase())
+  for (const [kind, url] of Object.entries(word.audio)) expectedAudio.set(url.replace(/^assets\/audio\//, ''), kind === 'word' ? word.word : kind === 'sentence' ? word.sentence : word.meaning)
+  for (const helper of word.support) if (helper.audio.includes('/support-')) expectedAudio.set(helper.audio.replace(/^assets\/audio\//, ''), helper.word.toLowerCase())
 }
 for (const [key, text] of Object.entries(guidance)) {
-  const filename = `prompt-${key}.mp3`
+  const filename = `xiaoxiao/prompt-${key}.mp3`
   check(!expectedAudio.has(filename), `Guidance filename collides with word audio: ${filename}`)
   expectedAudio.set(filename, text)
 }
