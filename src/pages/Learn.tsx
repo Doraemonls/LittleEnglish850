@@ -35,6 +35,45 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
   const pause = () => { audioPlayer.stop(); setPaused(true) }
   const hint = (open: boolean) => { audioPlayer.stop(); dispatch({ type: 'hint', open }) }
   const label = session.mode === 'lesson' ? `Lesson ${session.lessonId}` : session.mode === 'review' ? 'Review' : 'Practice'
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (paused || session.hintOpen) return
+      const target = e.target as HTMLElement
+      const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')
+      if (e.key === 'Enter') {
+        if (!isQuiz(question) || done) {
+          e.preventDefault()
+          audioPlayer.stop()
+          dispatch({ type: 'next' })
+        }
+        return
+      }
+      if (e.key === ' ' && !isInput) {
+        e.preventDefault()
+        if (question === 'card' || question === 'spell' || question === 'listen') {
+          audioPlayer.play(word.audio.word, state.settings.volume)
+          if (question === 'spell' || question === 'listen') dispatch({ type: 'heard' })
+        } else if (question === 'sentence') {
+          audioPlayer.play(word.audio.sentence, state.settings.volume)
+        }
+        return
+      }
+      if (!isInput && (question === 'read' || question === 'listen') && !done) {
+        if (question === 'listen' && !session.heard) return
+        const choiceIdx = parseInt(e.key, 10) - 1
+        const choices = session.choices[question]
+        if (choiceIdx >= 0 && choiceIdx < choices.length) {
+          e.preventDefault()
+          audioPlayer.stop()
+          dispatch({ type: 'answer', choice: choices[choiceIdx] })
+        }
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [paused, session, question, done, word, state.settings.volume, dispatch])
+
   return <main className="learn page" id="main" lang="en">
     <div className="exercise-nav"><span>{label}<span className="round-progress">{session.index + 1} / {session.wordIds.length}</span></span><button className="text-button" onClick={pause}><Icon name="pause"/>{session.mode === 'practice' ? 'Leave' : 'Pause'}</button></div>
     <div className="step-dots" role="img" aria-label={`Current step: ${titles[question]}`}>
@@ -69,7 +108,7 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
 }
 
 function Result({ session, onExit, onContinue }: { session: Session; onExit: () => void; onContinue?: () => void }) {
-  return <main className="result page" id="main" lang="en"><div className="result-card"><div className="result-mark"><Icon name="check" size={42}/></div><p className="eyebrow">{session.mode === 'lesson' ? `Lesson ${session.lessonId}` : session.mode === 'review' ? 'Review' : 'Practice'}</p><h1>All done!</h1><p>You practised {session.completed} {session.completed === 1 ? 'word' : 'words'}.</p><div className="result-actions"><button className="button primary" onClick={onExit}>{session.mode === 'practice' ? 'Back to word' : 'Done for today'}</button>{onContinue && <button className="button secondary" onClick={onContinue}>Keep learning<Icon name="arrow"/></button>}</div></div></main>
+  return <main className="result page" id="main" lang="en"><div className="result-card"><div className="result-mark"><Icon name="check" size={42}/></div><div className="result-stars" aria-hidden="true">⭐ ⭐ ⭐</div><p className="eyebrow">{session.mode === 'lesson' ? `Lesson ${session.lessonId}` : session.mode === 'review' ? 'Review' : 'Practice'}</p><h1>All done!</h1><p>You practised {session.completed} {session.completed === 1 ? 'word' : 'words'}.</p><div className="result-actions"><button className="button primary" onClick={onExit}>{session.mode === 'practice' ? 'Back to word' : 'Done for today'}</button>{onContinue && <button className="button secondary" onClick={onContinue}>Keep learning<Icon name="arrow"/></button>}</div></div></main>
 }
 
 export function Learn() {
