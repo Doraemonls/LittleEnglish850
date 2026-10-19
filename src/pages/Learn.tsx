@@ -22,13 +22,13 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
   const question = session.question
   const done = isQuiz(question) && session.flags[question].done
   useEffect(() => {
-    if (state.settings.spokenGuidance) audioPlayer.play(`assets/audio/prompt-${question}.mp3`, state.settings.volume)
+    if (state.settings.spokenGuidance) audioPlayer.play(`assets/audio/prompt-${question}.mp3`, state.settings.volume, undefined, state.settings.chineseVoice)
     return () => audioPlayer.stop()
     // Guidance runs once per question, not on every saved letter or volume update.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.index, question])
   useEffect(() => {
-    if (session.feedback && state.settings.spokenGuidance) audioPlayer.play(`assets/audio/prompt-${session.feedback}.mp3`, state.settings.volume)
+    if (session.feedback && state.settings.spokenGuidance) audioPlayer.play(`assets/audio/prompt-${session.feedback}.mp3`, state.settings.volume, undefined, state.settings.chineseVoice)
     // Feedback changes on an answer; saved input changes do not restart it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.feedback])
