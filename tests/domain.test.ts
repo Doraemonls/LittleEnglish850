@@ -133,6 +133,29 @@ describe('calendar and review', () => {
 })
 
 describe('formal session and derived progress', () => {
+  it('skips known lesson words into learned status and can finish on a skip', () => {
+    let state = act(freshState(), { type: 'start', mode: 'lesson' })
+    const firstId = state.session!.wordIds[0]
+    state = act(state, { type: 'skip' })
+    expect(state.words[firstId]).toEqual(learned())
+    expect(state.session).toMatchObject({ index: 1, completed: 1, question: 'card', phase: 'active', retry: 0 })
+    expect(state.words[state.session!.wordIds[1]].teaching).toBe('started')
+    state = act(state, { type: 'skip' })
+    expect(state.session!.completed).toBe(2)
+    for (let index = 2; index < 5; index++) state = act(state, { type: 'skip' })
+    expect(state.session).toMatchObject({ index: 4, completed: 5, question: 'sentence', phase: 'result', settled: true })
+    expect(counts(state)).toEqual({ unstarted: 845, started: 0, learned: 5, mastered: 0 })
+    expect(lessonStatus(state, 1)).toBe('已学过')
+  })
+  it('ignores skip outside a new-lesson word card', () => {
+    let lesson = act(freshState(), { type: 'start', mode: 'lesson' })
+    lesson = act(lesson, { type: 'next' })
+    expect(act(lesson, { type: 'skip' })).toBe(lesson)
+    const reviewState = freshState()
+    reviewState.words['ogden-apple'] = learned({ nextReviewOn: day })
+    const review = act(reviewState, { type: 'start', mode: 'review' })
+    expect(act(review, { type: 'skip' })).toBe(review)
+  })
   it('completes a five-word lesson with atomic resumable transitions', () => {
     let state = act(freshState(), { type: 'start', mode: 'lesson' })
     const options = state.session!.choices

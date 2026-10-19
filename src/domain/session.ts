@@ -7,6 +7,7 @@ export type ExerciseAction =
   | { type: 'answer'; choice: string }
   | { type: 'spell'; edit: SpellEdit }
   | { type: 'next' }
+  | { type: 'skip' }
   | { type: 'hint'; open: boolean }
   | { type: 'heard' }
 
@@ -61,6 +62,9 @@ export function spellEdit(answer: string, input: string, edit: SpellEdit) {
 
 export function stepSession(original: Session, action: ExerciseAction, random = Math.random): Session {
   if (original.phase !== 'active') return original
+  // Skipping changes formal lesson progress as well as the session, so reduce()
+  // handles it atomically. It is never available in isolated practice sessions.
+  if (action.type === 'skip') return original
   const session = structuredClone(original)
   const q = session.question
   if (action.type === 'hint') {
@@ -133,6 +137,27 @@ export function reduce(state: AppState, action: Action, day: string, random = Ma
     Object.values(session.flags).forEach(flag => { flag.hint = true })
     if (session.question === 'spell' && !session.flags.spell.done) { session.input = ''; session.feedback = null }
     return { ...state, session }
+  }
+  if (action.type === 'skip') {
+    if (old.mode !== 'lesson' || old.phase !== 'active' || old.question !== 'card') return state
+    const session = structuredClone(old)
+    const progress = { ...state.words }
+    const id = old.wordIds[old.index]
+    progress[id] = { teaching: 'completed', reviewStep: 0, lastReviewedOn: null, nextReviewOn: addDays(day, 1) }
+    session.completed++
+    if (old.index === old.wordIds.length - 1) {
+      // A result snapshot represents every completed word with settled flags.
+      Object.values(session.flags).forEach(flag => { flag.done = true })
+      session.settled = true
+      session.question = 'sentence'
+      session.phase = 'result'
+    } else {
+      session.index++
+      const prepared = prepareWord(session, random)
+      progress[prepared.wordIds[prepared.index]] = { teaching: 'started', reviewStep: 0, lastReviewedOn: null, nextReviewOn: null }
+      return { ...state, session: prepared, words: progress }
+    }
+    return { ...state, session, words: progress }
   }
   const session = stepSession(old, action, random)
   if (session === old) return state

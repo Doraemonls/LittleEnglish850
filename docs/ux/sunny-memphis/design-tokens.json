@@ -1,5 +1,5 @@
 {
-  "description": "Sunny Memphis design: vivid accents, tinted backgrounds and regular-weight sentence prompts. Implemented in src/app/styles.css.",
+  "description": "Sunny Memphis design: vivid accents, tinted backgrounds and regular-weight sentence prompts. Implemented in src/app/styles.css, including skipWordButton.",
   "primitive": {
     "color": {
       "ink": {
@@ -94,6 +94,20 @@
       "borderWidth": 1.25,
       "radius": 14,
       "minHeight": 44
+    },
+    "skipWordButton": {
+      "scope": "new lesson word card only",
+      "label": "I know this word",
+      "supportingText": "Skip and review it later",
+      "fill": "{semantic.surface}",
+      "text": "{semantic.text}",
+      "icon": "check",
+      "iconColor": "{primitive.color.green}",
+      "border": "{semantic.controlBorder}",
+      "borderWidth": 1.25,
+      "radius": 14,
+      "minHeight": 44,
+      "confirmationRequired": true
     },
     "card": {
       "fill": "{semantic.surface}",

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useApp, store } from '../app/store'
 import { navigate } from '../app/router'
 import { getWord } from '../data/catalog'
@@ -32,6 +32,10 @@ const stepLabels: Record<string, { en: string; zh: string }> = {
 function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (action: ExerciseAction) => void; onExit: () => void }) {
   const { state, status } = useApp()
   const [paused, setPaused] = useState(false)
+  const [skipOpen, setSkipOpen] = useState(false)
+  const [skippedWord, setSkippedWord] = useState<string | null>(null)
+  const skipButtonRef = useRef<HTMLButtonElement>(null)
+  const keepPractisingRef = useRef<HTMLButtonElement>(null)
   const word = getWord(session.wordIds[session.index])
   const question = session.question
   const done = isQuiz(question) && session.flags[question].done
@@ -52,16 +56,30 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
   }, [session.feedback])
   const pause = () => { audioPlayer.stop(); setPaused(true) }
   const hint = (open: boolean) => { audioPlayer.stop(); dispatch({ type: 'hint', open }) }
+  const skip = () => {
+    audioPlayer.stop()
+    setSkipOpen(false)
+    setSkippedWord(word.word)
+    dispatch({ type: 'skip' })
+  }
   const label = session.mode === 'lesson' ? `Lesson ${session.lessonId}` : session.mode === 'review' ? 'Review' : 'Practice'
 
   const questions = session.mode === 'review' ? ['spell', 'listen', 'read', 'sentence'] : ['card', 'read', 'listen', 'spell', 'sentence']
   const currentIdx = questions.indexOf(question)
 
   useEffect(() => {
+    if (!skippedWord) return
+    const timeout = window.setTimeout(() => setSkippedWord(null), 3000)
+    return () => window.clearTimeout(timeout)
+  }, [skippedWord])
+
+  useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (paused || session.hintOpen) return
+      if (paused || skipOpen || session.hintOpen) return
       const target = e.target as HTMLElement
       const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')
+      const isInteractive = target?.closest('button, a, [role="button"]') !== null
+      if (isInteractive) return
       if (e.key === 'Enter') {
         if (!isQuiz(question) || done) {
           e.preventDefault()
@@ -96,7 +114,7 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [paused, session, question, done, word, state.settings.volume, dispatch, stepKey])
+  }, [paused, skipOpen, session, question, done, word, state.settings.volume, dispatch, stepKey])
 
   return <main className="learn page" id="main" lang="en">
     <div className="exercise-nav"><span>{label}<span className="round-progress">{session.index + 1} / {session.wordIds.length}</span></span><button className="text-button" onClick={pause}><Icon name="pause"/>{session.mode === 'practice' ? 'Leave' : 'Pause'}</button></div>
@@ -141,9 +159,20 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
         {session.feedback === 'correct' ? <><Icon name="check"/>Correct!</> : session.feedback === 'retry' ? 'Try again' : session.feedback === 'letters' ? 'One letter at a time' : null}
       </div>
       {(!isQuiz(question) || done) && <button className="button primary full continue-button" onClick={() => { audioPlayer.stop(); dispatch({ type: 'next' }) }}>{question === 'card' ? 'Try it' : question === 'sentence' ? session.index === session.wordIds.length - 1 ? 'Finish' : 'Next word' : 'Continue'}<Icon name="arrow"/></button>}
+      {session.mode === 'lesson' && question === 'card' && <>
+        <button ref={skipButtonRef} className="button secondary full skip-word-button" onClick={() => { audioPlayer.stop(); setSkipOpen(true) }}><Icon name="check"/>I know this word</button>
+        <span className="skip-word-help">Skip and review it later</span>
+      </>}
       {isQuiz(question) && !done && <button className="text-button hint-button" onClick={() => hint(true)}><Icon name="bulb"/>Hint</button>}
     </section>
+    {skippedWord && <div className="skip-word-status" role="status" aria-live="polite" aria-atomic="true"><span className="skip-word-status-mark"><Icon name="check" size={18}/></span><span><strong>{skippedWord}</strong> · Learned</span></div>}
     {session.hintOpen && <Dialog title="Word hint" onClose={() => hint(false)}><div className="dialog-top"><h2>Word hint</h2><button className="icon-button" aria-label="Dismiss hint" onClick={() => hint(false)}><Icon name="close"/></button></div><WordCard word={word} language="en"/><button className="button primary full" onClick={() => hint(false)}>Close hint</button></Dialog>}
+    {skipOpen && <Dialog title={`Skip ${word.word}?`} initialFocusRef={keepPractisingRef} returnFocusRef={skipButtonRef} onClose={() => setSkipOpen(false)}><div className="skip-word-dialog">
+      <div className="skip-word-dialog-mark" aria-hidden="true"><Icon name="check"/></div>
+      <h2>Skip this word?</h2>
+      <p>We’ll mark “{word.word}” as learned and review it later.</p>
+      <div className="dialog-actions"><button className="button primary" onClick={skip}>Yes, skip</button><button ref={keepPractisingRef} className="button secondary" onClick={() => setSkipOpen(false)}>Keep practising</button></div>
+    </div></Dialog>}
     {paused && <Dialog title="Paused" onClose={() => setPaused(false)}><h2>Paused</h2>{session.mode !== 'practice' && <p>{status === 'saved' ? 'Progress saved' : 'Progress not saved. Keep this page open.'}</p>}<div className="dialog-actions"><button className="button primary" onClick={() => setPaused(false)}>Keep learning</button><button className="button secondary" onClick={onExit}>{session.mode === 'practice' ? 'Back to word' : 'Home'}</button>{session.mode !== 'practice' && <a className="text-button" href="#/book">Wordbook</a>}</div></Dialog>}
   </main>
 }

@@ -1,6 +1,6 @@
 # Little English 850｜页面与交互设计
 
-2026-10-13 · [Sunny Memphis 设计总览](sunny-memphis/index.html) · [视觉与组件说明](sunny-memphis/DESIGN_NOTES.md)
+2026-10-19 · [Sunny Memphis 设计总览](sunny-memphis/index.html) · [视觉与组件说明](sunny-memphis/DESIGN_NOTES.md) · [已会单词跳过设计](SKIP_WORD_DESIGN.md)
 
 首页连接学习、词语书与家长设置，家长设置连接双语关于页。学习从单词开始，每次只呈现一张词卡或一道题。
 
@@ -32,6 +32,7 @@ flowchart TB
 | [04 家长设置](sunny-memphis/04-parent.svg) | 统计、声音和导出 |
 | [05 关于](sunny-memphis/05-about.svg) | 中英文内容与顶部标语 |
 | [06 交互](sunny-memphis/06-interactions.svg) | 页面关系及必要反馈 |
+| [07 已会单词跳过](sunny-memphis/07-skip-word.svg) | 新课词卡入口、确认与跳到下一词后的反馈 |
 
 ## 首页与学习进度
 
@@ -69,6 +70,8 @@ flowchart LR
     Next -->|有| Card
     Next -->|没有| Done[All done!]
 ```
+
+新课词卡另有一个次要入口 `I know this word`。孩子确认后，当前词记为“学过”、安排次日复习，并直接进入下一词；它不会直接成为“记牢了”。入口不出现在复习或自由练习中，避免绕过复习判定。完整状态、文案与焦点规则见[已会单词跳过设计](SKIP_WORD_DESIGN.md)。
 
 学习页的导航、提问、操作和反馈使用简短英语；中文释义与例句翻译保留。题目标题及例句使用 400 常规字重，目标单词保留大字号。首页、词语书和家长设置使用中文；关于页可切换语言。
 

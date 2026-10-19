@@ -44,6 +44,27 @@ test('simple child home and working search with retained filters', async ({ page
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 })
 
+test('a known lesson word can be safely confirmed and skipped', async ({ page }) => {
+  await start(page)
+  const skip = page.getByRole('button', { name: 'I know this word', exact: true })
+  await skip.click()
+  const dialog = page.getByRole('dialog', { name: 'Skip apple?' })
+  await expect(dialog).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Keep practising' })).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(dialog).toBeHidden()
+  await expect(skip).toBeFocused()
+  expect((await stored(page)).words['ogden-apple'].teaching).toBe('started')
+
+  await skip.click()
+  await page.getByRole('button', { name: 'Yes, skip' }).click()
+  await expect(page.getByRole('heading', { name: 'ball', exact: true })).toBeVisible()
+  await expect(page.locator('.skip-word-status')).toContainText('apple · Learned')
+  const snapshot = await stored(page)
+  expect(snapshot.words['ogden-apple']).toEqual({ teaching: 'completed', reviewStep: 0, lastReviewedOn: null, nextReviewOn: addDays(localDay(), 1) })
+  expect(snapshot.session).toMatchObject({ index: 1, completed: 1, question: 'card', phase: 'active' })
+})
+
 test('five-word lesson, error reset, focus, refresh resume and result', async ({ page }) => {
   test.setTimeout(120_000)
   const errors: string[] = []

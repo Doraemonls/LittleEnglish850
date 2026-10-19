@@ -106,7 +106,7 @@ main:focus { outline: none; }
 .step-dot-label { font-size: 13px; }
 .exercise-panel, .detail-panel { background: var(--paper); border: 1px solid var(--border); border-radius: 16px; padding: 30px 34px; text-align: center; box-shadow: var(--shadow); }
 .question-header { margin-bottom: 24px; }
-.question-title { font-size: 27px; font-weight: 500; margin: 0; letter-spacing: 0; line-height: 1.4; }
+.question-title { font-size: 27px; font-weight: 400; margin: 0; letter-spacing: 0; line-height: 1.4; }
 .question-subtitle { display: inline-block; margin-top: 6px; font-size: 15px; color: var(--muted); background: var(--sky); padding: 3px 12px; border-radius: 20px; }
 .word-card { text-align: center; }
 .word-illustration { display: grid; place-items: center; font-size: 88px; height: 130px; width: 160px; margin: 0 auto 12px; line-height: 1; }
@@ -160,6 +160,15 @@ main:focus { outline: none; }
 .answer-feedback:empty { margin: 0; }
 .answer-feedback.success { color: var(--green); font-weight: 600; font-size: 19px; animation: pop-in 0.25s ease; }
 .continue-button { margin-top: 24px; }
+.skip-word-button { margin-top: 12px; }
+.skip-word-button > svg { color: var(--green); }
+.skip-word-help { display: block; margin-top: 9px; color: var(--muted); font-size: 13px; }
+.skip-word-status { display: flex; align-items: center; justify-content: center; gap: 10px; width: min(100% - 24px, 500px); min-height: 54px; margin: 14px auto 0; padding: 10px 18px; border-radius: 14px; background: var(--green); color: var(--paper); box-shadow: var(--shadow); animation: pop-in .25s ease; }
+.skip-word-status-mark { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--paper); color: var(--green); }
+.skip-word-dialog { text-align: center; }
+.skip-word-dialog-mark { display: grid; place-items: center; width: 54px; height: 54px; margin: 0 auto 16px; border-radius: 50%; background: var(--leaf-canvas); color: var(--green); }
+.skip-word-dialog h2 { margin: 0 0 12px; }
+.skip-word-dialog p { color: var(--muted); line-height: 1.65; }
 .hint-button { margin-top: 18px; }
 .spelling-area { padding-top: 5px; }
 .spelling-input { width: 100%; min-height: 62px; border: 1.25px solid var(--control); border-radius: 12px; background: var(--paper); color: var(--ink); font-size: 26px; letter-spacing: .06em; padding: 10px 16px; text-align: center; transition: border-color .15s ease; }
