@@ -52,5 +52,5 @@ export interface AppState {
   contentVersion: string
   words: Record<string, WordProgress>
   session: Session | null
-  settings: { volume: number; spokenGuidance: boolean; onboardingSeen: boolean; chineseVoice?: 'xiaoxiao' | 'yunxi' }
+  settings: { volume: number; spokenGuidance: boolean; onboardingSeen: boolean; chineseVoice?: 'xiaoxiao' | 'yunxia' }
 }

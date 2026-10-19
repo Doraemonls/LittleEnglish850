@@ -2,11 +2,11 @@
 
 Supports dual voices:
 - Default: zh-CN-XiaoxiaoNeural (warm, clear female voice)
-- Alternative: zh-CN-YunxiNeural (lively, friendly youthful voice)
+- Alternative: zh-CN-YunxiaNeural (authentic lively child voice)
 
 Outputs:
 - Xiaoxiao: public/assets/audio/*-meaning.mp3, prompt-*.mp3
-- Yunxi:    public/assets/audio/yunxi/*-meaning.mp3, prompt-*.mp3
+- Yunxia:   public/assets/audio/yunxia/*-meaning.mp3, prompt-*.mp3
 Updates content/audio-manifest.json.
 """
 from pathlib import Path
@@ -24,9 +24,9 @@ import soundfile as sf
 
 root = Path(__file__).resolve().parents[1]
 output_base = root / 'public/assets/audio'
-output_yunxi = output_base / 'yunxi'
+output_yunxia = output_base / 'yunxia'
 output_base.mkdir(parents=True, exist_ok=True)
-output_yunxi.mkdir(parents=True, exist_ok=True)
+output_yunxia.mkdir(parents=True, exist_ok=True)
 
 manifest_path = root / 'content/audio-manifest.json'
 words_path = root / 'content/words.json'
@@ -34,7 +34,7 @@ guidance_path = root / 'content/guidance.json'
 
 VOICES = {
     'xiaoxiao': {'voice': 'zh-CN-XiaoxiaoNeural', 'dir': output_base, 'prefix': ''},
-    'yunxi': {'voice': 'zh-CN-YunxiNeural', 'dir': output_yunxi, 'prefix': 'yunxi/'},
+    'yunxia': {'voice': 'zh-CN-YunxiaNeural', 'dir': output_yunxia, 'prefix': 'yunxia/'},
 }
 
 
@@ -154,12 +154,12 @@ async def run_batch(items, selected_voices, concurrency=6):
 def main():
     parser = argparse.ArgumentParser(description='Generate natural Chinese audio with Edge-TTS')
     parser.add_argument('--limit', type=int, help='Limit sample count of words')
-    parser.add_argument('--voice', choices=['all', 'xiaoxiao', 'yunxi'], default='all', help='Voice selection')
+    parser.add_argument('--voice', choices=['all', 'xiaoxiao', 'yunxia'], default='all', help='Voice selection')
     parser.add_argument('--concurrency', type=int, default=6, help='Concurrency limit')
     args = parser.parse_args()
 
     items = load_jobs(args.limit)
-    selected_voices = ['xiaoxiao', 'yunxi'] if args.voice == 'all' else [args.voice]
+    selected_voices = ['xiaoxiao', 'yunxia'] if args.voice == 'all' else [args.voice]
     asyncio.run(run_batch(items, selected_voices, args.concurrency))
 
 

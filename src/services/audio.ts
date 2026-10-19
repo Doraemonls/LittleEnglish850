@@ -8,9 +8,9 @@ const update = (url: string, status: AudioStatus, message = '') => {
   listeners.forEach(listener => listener())
 }
 
-export function resolveAudioUrl(url: string, voice?: 'xiaoxiao' | 'yunxi'): string {
-  if (voice === 'yunxi' && (url.includes('-meaning.mp3') || url.includes('prompt-'))) {
-    return url.replace('assets/audio/', 'assets/audio/yunxi/')
+export function resolveAudioUrl(url: string, voice?: 'xiaoxiao' | 'yunxia'): string {
+  if (voice === 'yunxia' && (url.includes('-meaning.mp3') || url.includes('prompt-'))) {
+    return url.replace('assets/audio/', 'assets/audio/yunxia/')
   }
   return url
 }
@@ -23,7 +23,7 @@ export const audioPlayer = {
     release?.(); release = null
     update('', 'idle')
   },
-  play(url: string, volume: number, onFinished?: () => void, voice?: 'xiaoxiao' | 'yunxi'): void {
+  play(url: string, volume: number, onFinished?: () => void, voice?: 'xiaoxiao' | 'yunxia'): void {
     audioPlayer.stop()
     if (!volume) { update(url, 'error', '声音已关闭，请在家长设置中调高音量。'); return }
     const resolvedUrl = resolveAudioUrl(url, voice)

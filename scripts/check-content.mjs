@@ -55,10 +55,10 @@ for (const [key, text] of Object.entries(guidance)) {
   expectedAudio.set(filename, text)
 }
 for (const word of words) {
-  expectedAudio.set(`yunxi/${word.word.toLowerCase()}-meaning.mp3`, word.meaning)
+  expectedAudio.set(`yunxia/${word.word.toLowerCase()}-meaning.mp3`, word.meaning)
 }
 for (const [key, text] of Object.entries(guidance)) {
-  expectedAudio.set(`yunxi/prompt-${key}.mp3`, text)
+  expectedAudio.set(`yunxia/prompt-${key}.mp3`, text)
 }
 if (!textOnly && !sample) {
   check(Object.keys(manifest).length === expectedAudio.size, 'Audio manifest must exactly match requested files')

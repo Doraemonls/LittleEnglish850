@@ -40,7 +40,7 @@ python -m venv .cache/audio
 npm run content:check
 ```
 
-当前使用：英语为 Kokoro v1.0 int8 的 `af_heart`；普通话为高质量自然语音合成（默认音色为温暖女声 `zh-CN-XiaoxiaoNeural`，备选音色为清亮童声 `zh-CN-YunxiNeural`，存放在 `public/assets/audio/yunxi/`）。家长设置中可自由切换音色。逐文件生成，按文本、设置和哈希跳过未修改内容；网络失败采用有上限的重试，错误记录在项目目录中。`lead`、`wind`、`record` 等英文多读音词按当前含义设置音素覆盖。
+当前使用：英语为 Kokoro v1.0 int8 的 `af_heart`；普通话为高质量自然语音合成（默认音色为温暖女声 `zh-CN-XiaoxiaoNeural`，备选音色为活泼童声 `zh-CN-YunxiaNeural`，存放在 `public/assets/audio/yunxia/`）。家长设置中可自由切换音色。逐文件生成，按文本、设置和哈希跳过未修改内容；网络失败采用有上限的重试，错误记录在项目目录中。`lead`、`wind`、`record` 等英文多读音词按当前含义设置音素覆盖。
 
 音频包含 850×3 段单词、例句和中文释义（含双音色），10 段操作提示（含双音色）及 313 段辅助词，共 3,733 个音频文件。自动检查验证覆盖、文本对应、哈希、解码、静音和时长。
 
