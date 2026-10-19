@@ -13,7 +13,7 @@ export function AudioButton({ src, label = '听单词', onFinished, large = fals
   const status = loading ? (english ? 'Loading…' : '准备声音…') : playing ? (english ? 'Playing' : '正在播放') : ''
   const error = english ? (!state.settings.volume ? 'Sound is off. Ask a parent to turn up the volume.' : 'Sound is unavailable. Try again.') : sound.message
   return <div className={`audio-control audio-${variant} ${large ? 'audio-large' : ''}`} lang={language}>
-    <button type="button" className={`audio-button ${playing ? 'playing' : ''}`} aria-label={label} aria-busy={loading} onClick={() => audioPlayer.play(src, state.settings.volume, onFinished)}>
+    <button type="button" className={`audio-button ${playing ? 'playing' : ''}`} aria-label={label} aria-busy={loading} onClick={() => audioPlayer.play(src, state.settings.volume, onFinished, state.settings.chineseVoice)}>
       {variant === 'sentence' ? <><span className="english-sentence" lang="en">{text}</span><Icon name="sound" size={24}/><span className="sr-only" role="status">{status}</span></> : <><Icon name="sound" size={24}/><span className={variant === 'icon' ? 'sr-only' : undefined}>{status || label}</span></>}
     </button>
     {active && sound.status === 'error' && <p className="audio-error" role="alert">{error}</p>}

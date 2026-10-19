@@ -54,6 +54,12 @@ for (const [key, text] of Object.entries(guidance)) {
   check(!expectedAudio.has(filename), `Guidance filename collides with word audio: ${filename}`)
   expectedAudio.set(filename, text)
 }
+for (const word of words) {
+  expectedAudio.set(`yunxi/${word.word.toLowerCase()}-meaning.mp3`, word.meaning)
+}
+for (const [key, text] of Object.entries(guidance)) {
+  expectedAudio.set(`yunxi/prompt-${key}.mp3`, text)
+}
 if (!textOnly && !sample) {
   check(Object.keys(manifest).length === expectedAudio.size, 'Audio manifest must exactly match requested files')
   for (const [filename, text] of expectedAudio) {

@@ -18,7 +18,7 @@ export type Action = ExerciseAction
 
 export const freshState = (): AppState => ({
   schemaVersion: 1, contentVersion: CONTENT_VERSION, words: {}, session: null,
-  settings: { volume: 0.8, spokenGuidance: true, onboardingSeen: false },
+  settings: { volume: 0.8, spokenGuidance: true, onboardingSeen: false, chineseVoice: 'xiaoxiao' },
 })
 
 const newFlag = (): QuizFlag => ({ done: false, error: false, hint: false })
