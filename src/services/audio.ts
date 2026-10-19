@@ -8,6 +8,20 @@ const update = (url: string, status: AudioStatus, message = '') => {
   listeners.forEach(listener => listener())
 }
 
+export function resolveAudioUrl(url: string, voice: 'xiaoxiao' | 'yunxia' = 'xiaoxiao'): string {
+  const chosenVoice = voice === 'yunxia' ? 'yunxia' : 'xiaoxiao'
+  if (url.includes('-meaning.mp3') || url.includes('prompt-')) {
+    if (url.includes('assets/audio/xiaoxiao/')) {
+      return url.replace('assets/audio/xiaoxiao/', `assets/audio/${chosenVoice}/`)
+    }
+    if (url.includes('assets/audio/yunxia/')) {
+      return url.replace('assets/audio/yunxia/', `assets/audio/${chosenVoice}/`)
+    }
+    return url.replace('assets/audio/', `assets/audio/${chosenVoice}/`)
+  }
+  return url
+}
+
 export const audioPlayer = {
   getSnapshot: () => snapshot,
   subscribe(listener: () => void) { listeners.add(listener); return () => { listeners.delete(listener) } },
@@ -16,17 +30,23 @@ export const audioPlayer = {
     release?.(); release = null
     update('', 'idle')
   },
-  play(url: string, volume: number, onFinished?: () => void): void {
+  play(url: string, volume: number, onFinished?: () => void, voice?: 'xiaoxiao' | 'yunxia'): void {
     audioPlayer.stop()
     if (!volume) { update(url, 'error', '声音已关闭，请在家长设置中调高音量。'); return }
+    const resolvedUrl = resolveAudioUrl(url, voice)
     update(url, 'loading')
-    const element = new Audio(import.meta.env.BASE_URL + url)
+    const element = new Audio(import.meta.env.BASE_URL + resolvedUrl)
     player = element
     element.volume = volume
     let finished = false
     const clear = () => { window.clearTimeout(timeout); element.onended = null; element.onerror = null; element.onplaying = null }
     const fail = () => {
       if (player !== element || finished) return
+      if (voice === 'yunxia') {
+        finished = true; clear(); element.pause()
+        audioPlayer.play(url, volume, onFinished, 'xiaoxiao')
+        return
+      }
       finished = true; clear(); element.pause()
       update(url, 'error', '声音暂时没准备好，点按钮再听一次。')
     }

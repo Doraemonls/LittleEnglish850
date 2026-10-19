@@ -60,6 +60,7 @@ export function parseState(raw: string | null): AppState {
   if (!object(value) || value.schemaVersion !== 1 || value.contentVersion !== CONTENT_VERSION || !object(value.words) || !object(value.settings)) return invalid()
   const settings = value.settings
   if (typeof settings.volume !== 'number' || !Number.isFinite(settings.volume) || settings.volume < 0 || settings.volume > 1 || !bool(settings.spokenGuidance) || !bool(settings.onboardingSeen)) return invalid()
+  if (settings.chineseVoice !== undefined && !['xiaoxiao', 'yunxia', 'yunxi'].includes(String(settings.chineseVoice))) return invalid()
   let started = 0
   for (const [id, progress] of Object.entries(value.words)) {
     if (!byId.has(id) || !object(progress) || !['started', 'completed'].includes(String(progress.teaching)) || !integer(progress.reviewStep, 0, 3)) return invalid()
@@ -71,6 +72,8 @@ export function parseState(raw: string | null): AppState {
   }
   if (started > 1) return invalid()
   const state = value as unknown as AppState
+  if (state.settings.chineseVoice === ('yunxi' as unknown)) state.settings.chineseVoice = 'yunxia'
+  if (!state.settings.chineseVoice) state.settings.chineseVoice = 'xiaoxiao'
   // Repair only the old wordbook-peek bug: completed spelling lost its input.
   // The full validator still checks this session before any state is accepted.
   const session = state.session

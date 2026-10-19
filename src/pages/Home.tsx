@@ -45,14 +45,13 @@ export function Home() {
       <section className="home-progress" aria-label="我的单词">
         <div className="home-progress-header">
           <h2>我的单词</h2>
-          <span className="home-progress-total">累计学过 <strong>{stats.learned + stats.mastered}</strong> / 850 词</span>
+          {stats.learned + stats.mastered > 0 && <span className="home-progress-total">累计学过 <strong>{stats.learned + stats.mastered}</strong> 词</span>}
         </div>
         <ProgressBar state={state}/>
-        <div className="home-stats-chips" aria-label="学习状态统计">
+        {stats.learned + stats.mastered > 0 && <div className="home-stats-chips" aria-label="学习状态统计">
           <span className="stat-chip mastered"><i className="status-dot mastered" aria-hidden="true"/>记牢了 <strong>{stats.mastered}</strong></span>
           <span className="stat-chip learned"><i className="status-dot learned" aria-hidden="true"/>学过 <strong>{stats.learned}</strong></span>
-          <span className="stat-chip unstarted"><i className="status-dot unstarted" aria-hidden="true"/>未开始 <strong>{stats.unstarted}</strong></span>
-        </div>
+        </div>}
       </section>
       <button className="button primary home-start" onClick={start}>{labels[action]}<Icon name="arrow"/></button>
       {action !== 'wordbook' && <a className="home-wordbook" href="#/book"><Icon name="book"/>翻翻词语书<Icon name="arrow" size={18}/></a>}

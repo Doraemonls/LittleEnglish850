@@ -40,13 +40,13 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
   const wrongChoice = wrongAttempt?.stepKey === stepKey ? wrongAttempt.choiceId : null
 
   useEffect(() => {
-    if (state.settings.spokenGuidance) audioPlayer.play(`assets/audio/prompt-${question}.mp3`, state.settings.volume)
+    if (state.settings.spokenGuidance) audioPlayer.play(`assets/audio/prompt-${question}.mp3`, state.settings.volume, undefined, state.settings.chineseVoice)
     return () => audioPlayer.stop()
     // Guidance runs once per question, not on every saved letter or volume update.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.index, question])
   useEffect(() => {
-    if (session.feedback && state.settings.spokenGuidance) audioPlayer.play(`assets/audio/prompt-${session.feedback}.mp3`, state.settings.volume)
+    if (session.feedback && state.settings.spokenGuidance) audioPlayer.play(`assets/audio/prompt-${session.feedback}.mp3`, state.settings.volume, undefined, state.settings.chineseVoice)
     // Feedback changes on an answer; saved input changes do not restart it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.feedback])
@@ -114,7 +114,7 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
         <h1 className="question-title">{question === 'read' ? <>What does <span className="question-word">{word.word}</span> mean?</> : titles[question].en}</h1>
         <span className="question-subtitle">{titles[question].zh}</span>
       </div>}
-      {question === 'card' && <WordCard word={word} language="en" sentence={false}/>}
+      {question === 'card' && <WordCard word={word} language="en"/>}
       {question === 'sentence' && <><div className="sentence-word">{word.word}</div><Sentence word={word} language="en"/></>}
       {(question === 'spell' || question === 'listen') && <AudioButton large src={word.audio.word} language="en" label={session.heard ? 'Listen again' : 'Listen'} onFinished={() => dispatch({ type: 'heard' })}/>}
       {question === 'listen' && !session.heard && <div className="listen-prompt-banner"><Icon name="sound" size={20}/><span>先点上方大喇叭听读音哦~</span></div>}

@@ -277,6 +277,8 @@ main:focus { outline: none; }
 .progress-info summary { cursor: pointer; min-height: 44px; padding: 10px 0; }
 .progress-info p { margin-top: 6px; }
 .setting-row { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding-bottom: 12px; }
+.setting-row select { min-height: 44px; border: 1.25px solid var(--control); border-radius: 10px; background: var(--paper); color: var(--ink); padding: 6px 12px; font-size: 15px; font-weight: 500; cursor: pointer; max-width: 220px; }
+.setting-row select:focus-visible { outline: 3px solid var(--blue-ink); outline-offset: 2px; }
 .setting-row input { appearance: none; width: 58px; height: 44px; border-radius: 30px; flex-shrink: 0; cursor: pointer; margin: 0; background: var(--control); border: 5px solid var(--paper); }
 .setting-row input::before { content: ''; display: block; height: 26px; width: 26px; margin: 4px; background: white; border-radius: 50%; box-shadow: 0 1px 3px #29424a30; transition: transform .15s; }
 .setting-row input:checked { background: var(--green); }

@@ -56,7 +56,11 @@ for index, word in enumerate(ordered):
         'context': translation, 'illustration': illustration,
         'sentence': sentence, 'sentenceZh': translation, 'support': support,
         'options': [f'ogden-{w.lower()}' for w in [word, *distractors[:2]]],
-        'audio': {kind: f'assets/audio/{word.lower()}-{kind}.mp3' for kind in ['word', 'sentence', 'meaning']},
+        'audio': {
+            'word': f'assets/audio/{word.lower()}-word.mp3',
+            'sentence': f'assets/audio/{word.lower()}-sentence.mp3',
+            'meaning': f'assets/audio/xiaoxiao/{word.lower()}-meaning.mp3',
+        },
         'sources': ['ogden-wiktionary', 'project-text', 'kokoro'],
     })
 (root / 'content/words.json').write_text(json.dumps(words, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
