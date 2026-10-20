@@ -1,5 +1,5 @@
 import { useLayoutEffect } from 'react'
-import { useApp, store } from './store'
+import { initializeStore, useApp, store } from './store'
 import { useRoute } from './router'
 import { byId } from '../data/catalog'
 import { audioPlayer } from '../services/audio'
@@ -12,6 +12,7 @@ import { Icon } from '../components/Icon'
 import { Decorations } from '../components/Decorations'
 
 export function App() {
+  initializeStore()
   const route = useRoute()
   const { status } = useApp()
   const parts = route.split('/')

@@ -11,7 +11,6 @@ import { WordCard, Sentence } from '../components/WordCard'
 import { AudioButton } from '../components/AudioButton'
 import { SpellingInput } from '../components/SpellingInput'
 import { Dialog } from '../components/Dialog'
-import { Onboarding } from '../components/Onboarding'
 
 const titles: Record<string, { en: string; zh: string }> = {
   card: { en: 'Word card', zh: '看图识词' },
@@ -42,11 +41,18 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
   const stepKey = `${session.index}-${question}`
   const [wrongAttempt, setWrongAttempt] = useState<{ stepKey: string; choiceId: string } | null>(null)
   const wrongChoice = wrongAttempt?.stepKey === stepKey ? wrongAttempt.choiceId : null
+  const dispatchRef = useRef(dispatch)
+
+  useEffect(() => { dispatchRef.current = dispatch }, [dispatch])
 
   useEffect(() => {
-    if (state.settings.spokenGuidance) audioPlayer.play(`assets/audio/prompt-${question}.mp3`, state.settings.volume, undefined, state.settings.chineseVoice)
+    if (question === 'listen' || question === 'spell') {
+      audioPlayer.play(word.audio.word, state.settings.volume, () => dispatchRef.current({ type: 'heard' }))
+    } else if (state.settings.spokenGuidance) {
+      audioPlayer.play(`assets/audio/prompt-${question}.mp3`, state.settings.volume, undefined, state.settings.chineseVoice)
+    }
     return () => audioPlayer.stop()
-    // Guidance runs once per question, not on every saved letter or volume update.
+    // Entry audio runs once per question, not on every saved input or settings update.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.index, question])
   useEffect(() => {
@@ -55,7 +61,6 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.feedback])
   const pause = () => { audioPlayer.stop(); setPaused(true) }
-  const hint = (open: boolean) => { audioPlayer.stop(); dispatch({ type: 'hint', open }) }
   const skip = () => {
     audioPlayer.stop()
     setSkipOpen(false)
@@ -74,14 +79,27 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
   }, [skippedWord])
 
   useEffect(() => {
+    if (session.hintOpen) dispatchRef.current({ type: 'hint', open: false })
+  }, [session.hintOpen])
+
+  useEffect(() => {
+    if (!done || session.feedback !== 'correct' || paused) return
+    const timeout = window.setTimeout(() => {
+      audioPlayer.stop()
+      dispatchRef.current({ type: 'next' })
+    }, 1000)
+    return () => window.clearTimeout(timeout)
+  }, [done, session.feedback, paused, stepKey])
+
+  useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (paused || skipOpen || session.hintOpen) return
+      if (paused || skipOpen) return
       const target = e.target as HTMLElement
       const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')
       const isInteractive = target?.closest('button, a, [role="button"]') !== null
       if (isInteractive) return
       if (e.key === 'Enter') {
-        if (!isQuiz(question) || done) {
+        if (!isQuiz(question)) {
           e.preventDefault()
           audioPlayer.stop()
           dispatch({ type: 'next' })
@@ -91,8 +109,7 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
       if (e.key === ' ' && !isInput) {
         e.preventDefault()
         if (question === 'card' || question === 'spell' || question === 'listen') {
-          audioPlayer.play(word.audio.word, state.settings.volume)
-          if (question === 'spell' || question === 'listen') dispatch({ type: 'heard' })
+          audioPlayer.play(word.audio.word, state.settings.volume, question === 'spell' || question === 'listen' ? () => dispatchRef.current({ type: 'heard' }) : undefined)
         } else if (question === 'sentence') {
           audioPlayer.play(word.audio.sentence, state.settings.volume)
         }
@@ -135,38 +152,32 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
       {question === 'card' && <WordCard word={word} language="en"/>}
       {question === 'sentence' && <><div className="sentence-word">{word.word}</div><Sentence word={word} language="en"/></>}
       {(question === 'spell' || question === 'listen') && <AudioButton large src={word.audio.word} language="en" label={session.heard ? 'Listen again' : 'Listen'} onFinished={() => dispatch({ type: 'heard' })}/>}
-      {question === 'listen' && !session.heard && <div className="listen-prompt-banner"><Icon name="sound" size={20}/><span>先点上方大喇叭听读音哦~</span></div>}
       {(question === 'read' || question === 'listen') && <>
         <div className="choices">{session.choices[question].map(id => {
           const choice = getWord(id)
           const isChosen = done && id === word.id
           const isWrong = id === wrongChoice
-          return <div className={`choice-row ${isChosen ? 'chosen' : ''} ${isWrong ? 'wrong-choice' : ''}`} key={id}>
-            <button className="choice" disabled={done || (question === 'listen' && !session.heard)} onClick={() => {
+          return <button className={`choice-row choice ${isChosen ? 'chosen' : ''} ${isWrong ? 'wrong-choice' : ''}`} key={id} disabled={done || (question === 'listen' && !session.heard)} onClick={() => {
               audioPlayer.stop()
               if (id !== word.id) setWrongAttempt({ stepKey, choiceId: id })
               else setWrongAttempt(null)
               dispatch({ type: 'answer', choice: id })
             }}>
               <span lang="zh-CN">{choice.meaning}</span>{choice.illustration && <span className="choice-picture" aria-hidden="true">{choice.illustration}</span>}{isChosen && <Icon name="check"/>}
-            </button>
-            <AudioButton src={choice.audio.meaning} label={`Play meaning: ${choice.meaning}`} variant="icon" language="en"/>
-          </div>
+          </button>
         })}</div>
       </>}
-      {question === 'spell' && <SpellingInput key={word.id} session={session} onEdit={edit => dispatch({ type: 'spell', edit })}/>}
-      <div className={`answer-feedback ${session.feedback === 'correct' ? 'success' : ''}`} role="status" aria-live="polite">
-        {session.feedback === 'correct' ? <><Icon name="check"/>Correct!</> : session.feedback === 'retry' ? 'Try again' : session.feedback === 'letters' ? 'One letter at a time' : null}
-      </div>
-      {(!isQuiz(question) || done) && <button className="button primary full continue-button" onClick={() => { audioPlayer.stop(); dispatch({ type: 'next' }) }}>{question === 'card' ? 'Try it' : question === 'sentence' ? session.index === session.wordIds.length - 1 ? 'Finish' : 'Next word' : 'Continue'}<Icon name="arrow"/></button>}
+      {question === 'spell' && <SpellingInput key={word.id} session={session} onInput={value => dispatch({ type: 'spellInput', value })} onSubmit={() => dispatch({ type: 'submitSpell' })}/>}
+      {isQuiz(question) && <div className={`answer-feedback ${session.feedback === 'correct' ? 'success' : ''}`} role="status" aria-live="polite" aria-atomic="true">
+        {session.feedback === 'correct' ? <><Icon name="check"/>Correct!</> : session.feedback === 'retry' || session.feedback === 'letters' ? 'Try again' : null}
+      </div>}
+      {!isQuiz(question) && <button className="button primary full continue-button" onClick={() => { audioPlayer.stop(); dispatch({ type: 'next' }) }}>{question === 'card' ? 'Try it' : session.index === session.wordIds.length - 1 ? 'Finish' : 'Next word'}<Icon name="arrow"/></button>}
       {session.mode === 'lesson' && question === 'card' && <>
         <button ref={skipButtonRef} className="button secondary full skip-word-button" onClick={() => { audioPlayer.stop(); setSkipOpen(true) }}><Icon name="check"/>I know this word</button>
         <span className="skip-word-help">Skip and review it later</span>
       </>}
-      {isQuiz(question) && !done && <button className="text-button hint-button" onClick={() => hint(true)}><Icon name="bulb"/>Hint</button>}
     </section>
     {skippedWord && <div className="skip-word-status" role="status" aria-live="polite" aria-atomic="true"><span className="skip-word-status-mark"><Icon name="check" size={18}/></span><span><strong>{skippedWord}</strong> · Learned</span></div>}
-    {session.hintOpen && <Dialog title="Word hint" onClose={() => hint(false)}><div className="dialog-top"><h2>Word hint</h2><button className="icon-button" aria-label="Dismiss hint" onClick={() => hint(false)}><Icon name="close"/></button></div><WordCard word={word} language="en"/><button className="button primary full" onClick={() => hint(false)}>Close hint</button></Dialog>}
     {skipOpen && <Dialog title={`Skip ${word.word}?`} initialFocusRef={keepPractisingRef} returnFocusRef={skipButtonRef} onClose={() => setSkipOpen(false)}><div className="skip-word-dialog">
       <div className="skip-word-dialog-mark" aria-hidden="true"><Icon name="check"/></div>
       <h2>Skip this word?</h2>
@@ -217,8 +228,7 @@ export function Learn() {
     const canContinue = dueWords(state, localDay()).length || nextLesson(state)
     return <Result session={session} onExit={() => { store.dispatch({ type: 'leaveResult' }); navigate('/') }} onContinue={canContinue ? () => store.dispatch({ type: 'start', mode: dueWords(state, localDay()).length ? 'review' : 'lesson' }) : undefined}/>
   }
-  const onboarding = session.mode === 'lesson' && !state.settings.onboardingSeen
-  return onboarding ? <main className="learn page" id="main" lang="en"><Onboarding language="en" onClose={() => store.dispatch({ type: 'settings', value: { onboardingSeen: true } })}/></main> : <Exercise session={session} dispatch={action => store.dispatch(action)} onExit={() => navigate('/')}/>
+  return <Exercise session={session} dispatch={action => store.dispatch(action)} onExit={() => navigate('/')}/>
 }
 
 export function Practice({ wordId }: { wordId: string }) {

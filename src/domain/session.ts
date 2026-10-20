@@ -2,10 +2,10 @@ import { CONTENT_VERSION, getWord, lessonWords } from '../data/catalog'
 import type { AppState, Question, Quiz, QuizFlag, Session } from '../data/types'
 import { addDays, dueWords, nextLesson, reviewed } from './progress'
 
-export type SpellEdit = { kind: 'insert'; value: string } | { kind: 'delete' } | { kind: 'reject' }
 export type ExerciseAction =
   | { type: 'answer'; choice: string }
-  | { type: 'spell'; edit: SpellEdit }
+  | { type: 'spellInput'; value: string }
+  | { type: 'submitSpell' }
   | { type: 'next' }
   | { type: 'skip' }
   | { type: 'hint'; open: boolean }
@@ -50,15 +50,11 @@ export function createSession(mode: Session['mode'], ids: string[], lessonId: nu
   return prepareWord({ mode, phase: 'active', lessonId, wordIds: ids, index: 0, completed: 0, retry: 0 } as Session, random)
 }
 
-export function spellEdit(answer: string, input: string, edit: SpellEdit) {
-  const letters = answer.toLowerCase().replace(/[^a-z]/g, '')
-  if (edit.kind === 'delete') return { input: input.slice(0, -1), error: false, done: false, rejected: false }
-  if (edit.kind === 'reject' || !/^[a-z]$/i.test(edit.value)) return { input: '', error: true, done: false, rejected: true }
-  const value = edit.value.toLowerCase()
-  if (value !== letters[input.length]) return { input: '', error: true, done: false, rejected: false }
-  const next = input + value
-  return { input: next, error: false, done: next === letters, rejected: false }
-}
+export const normalizeSpelling = (value: string) => value.trim().toLocaleLowerCase('en-US')
+export const validSpellingInput = (value: string) => value.length <= 64 && Array.from(value).every(character => {
+  const code = character.charCodeAt(0)
+  return code >= 32 && code !== 127
+})
 
 export function stepSession(original: Session, action: ExerciseAction, random = Math.random): Session {
   if (original.phase !== 'active') return original
@@ -84,13 +80,17 @@ export function stepSession(original: Session, action: ExerciseAction, random = 
     session.flags[q].done = correct
     session.flags[q].error ||= !correct
     session.feedback = correct ? 'correct' : 'retry'
-  } else if (action.type === 'spell') {
+  } else if (action.type === 'spellInput') {
     if (q !== 'spell' || session.flags.spell.done || !session.heard) return original
-    const result = spellEdit(getWord(session.wordIds[session.index]).word, session.input, action.edit)
-    session.input = result.input
-    session.flags.spell.done = result.done
-    session.flags.spell.error ||= result.error
-    session.feedback = result.done ? 'correct' : result.rejected ? 'letters' : result.error ? 'retry' : null
+    if (!validSpellingInput(action.value)) return original
+    session.input = action.value
+    session.feedback = null
+  } else if (action.type === 'submitSpell') {
+    if (q !== 'spell' || session.flags.spell.done || !session.heard) return original
+    const correct = normalizeSpelling(session.input) === normalizeSpelling(getWord(session.wordIds[session.index]).word)
+    session.flags.spell.done = correct
+    session.flags.spell.error ||= !correct
+    session.feedback = correct ? 'correct' : 'retry'
   } else if (action.type === 'next') {
     if (isQuiz(q) && !session.flags[q].done) return original
     if (q === 'sentence') {

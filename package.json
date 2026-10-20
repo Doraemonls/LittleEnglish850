@@ -9,6 +9,7 @@
   "scripts": {
     "content:prepare": "node scripts/prepare-content.mjs",
     "predev": "npm run content:prepare",
+    "pretest": "npm run content:prepare",
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",

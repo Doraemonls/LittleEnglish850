@@ -38,7 +38,7 @@ This starts an isolated preview server on port 5175 at `/LittleEnglish850/`. Tes
 
 ## Content and performance
 
-`content/words.json` is the readable catalogue. `scripts/prepare-content.mjs` generates the ignored `src/data/words.generated.json`; Vite publishes it with a content hash. The app fetches this asset once, and the source-download link uses the same URL. There is no second checked-in public catalogue. Run `npm run content:prepare` after editing the catalogue during an existing dev session. Fetch preloading is intentionally omitted because tested WebKit versions download the same asset twice.
+`content/words.json` is the readable catalogue. `scripts/prepare-content.mjs` generates the ignored `src/data/words.generated.json` as a normalized browser payload: repeated sentence helpers are deduplicated, unused authoring fields are omitted, and word references use numeric indexes. Vite publishes both files with content hashes; the app fetches the compact asset once, while the parent-page source link exposes the readable file only on demand. Run `npm run content:prepare` after editing the catalogue during an existing dev session. The UI chunk and catalogue start in parallel. Fetch preloading is intentionally omitted because tested WebKit versions download the same asset twice.
 
 The wordbook retains its search and scroll state while hidden, but does not render its lists. Lesson lookups use the validated five-word ordering. Audio remains on demand.
 

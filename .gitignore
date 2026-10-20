@@ -5,6 +5,7 @@ coverage/
 playwright-report/
 test-results/
 src/data/words.generated.json
+src/data/words.source.generated.json
 
 # Local generation workspace and logs
 tmp/

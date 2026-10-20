@@ -22,7 +22,6 @@ test('storage write failure keeps in-memory exercise and offers successful retry
     ;(window as typeof window & { restoreStorage?: () => void }).restoreStorage = () => { Storage.prototype.setItem = original }
   })
   await page.getByRole('button', { name: '开始学单词', exact: true }).click()
-  await page.getByRole('button', { name: 'Skip', exact: true }).click()
   await expect(page.getByRole('alert')).toContainText('Progress not saved')
   await page.getByRole('button', { name: 'Try it', exact: true }).click()
   await page.getByRole('button', { name: '苹果', exact: true }).click()

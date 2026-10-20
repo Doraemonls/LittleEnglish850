@@ -1,0 +1,180 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1320" viewBox="0 0 1600 1320" role="img" aria-labelledby="title desc">
+  <title id="title">学习交互修订</title>
+  <desc id="desc">展示当前交互缺陷、减少操作后的学习流程、单一拼写输入框和保留的安全例外。</desc>
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#29424A" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#536D75"/>
+    </marker>
+    <style>
+      text { font-family: Arial, "Microsoft YaHei", sans-serif; fill: #29424A; }
+      .eyebrow { font-size: 14px; font-weight: 700; letter-spacing: 1.8px; fill: #536D75; }
+      .title { font-size: 38px; font-weight: 800; }
+      .subtitle { font-size: 18px; fill: #536D75; }
+      .section { font-size: 25px; font-weight: 800; }
+      .card-title { font-size: 20px; font-weight: 800; }
+      .body { font-size: 15px; fill: #536D75; }
+      .small { font-size: 13px; fill: #536D75; }
+      .chip { font-size: 14px; font-weight: 700; }
+      .step { font-size: 13px; font-weight: 800; fill: #275D7D; letter-spacing: 1px; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1320" fill="#F8FCFE"/>
+  <rect width="1600" height="7" fill="#68BFEA"/>
+  <circle cx="1508" cy="72" r="8" fill="#F47E68"/>
+  <circle cx="1468" cy="104" r="17" fill="none" stroke="#FFC938" stroke-width="6"/>
+
+  <text x="58" y="54" class="eyebrow">LITTLE ENGLISH / UX REVIEW PROPOSAL</text>
+  <text x="58" y="104" class="title">学习交互修订 / 一个意图，一个动作</text>
+  <text x="58" y="138" class="subtitle">当前实现 · 2026-10-20 · 单一动作、自动推进与自然拼写输入</text>
+
+  <text x="58" y="194" class="section">为什么“下一步”有时像消失了？</text>
+
+  <g filter="url(#shadow)">
+    <rect x="58" y="222" width="458" height="142" rx="18" fill="#FFFFFF" stroke="#F4B4A8" stroke-width="1.5"/>
+    <circle cx="92" cy="258" r="17" fill="#F47E68"/>
+    <text x="92" y="264" font-size="16" font-weight="800" fill="#FFFFFF" text-anchor="middle">1</text>
+    <text x="122" y="265" class="card-title">按钮在可视区之外</text>
+    <text x="82" y="302" class="body">正确后才把 Continue 插到列表底部。</text>
+    <text x="82" y="328" class="body">390×550 视口中，听音题按钮底部到 579 px。</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="571" y="222" width="458" height="142" rx="18" fill="#FFFFFF" stroke="#F4B4A8" stroke-width="1.5"/>
+    <circle cx="605" cy="258" r="17" fill="#F47E68"/>
+    <text x="605" y="264" font-size="16" font-weight="800" fill="#FFFFFF" text-anchor="middle">2</text>
+    <text x="635" y="265" class="card-title">一个选项行，两个动作</text>
+    <text x="595" y="302" class="body">点文字是答题，点右侧扬声器只是播放中文。</text>
+    <text x="595" y="328" class="body">视觉像一个控件，结果却不同。</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1084" y="222" width="458" height="142" rx="18" fill="#FFFFFF" stroke="#F4B4A8" stroke-width="1.5"/>
+    <circle cx="1118" cy="258" r="17" fill="#F47E68"/>
+    <text x="1118" y="264" font-size="16" font-weight="800" fill="#FFFFFF" text-anchor="middle">3</text>
+    <text x="1148" y="265" class="card-title">拼写出现两套输入表现</text>
+    <text x="1108" y="302" class="body">真实输入框 + 拆分字母格重复显示同一内容。</text>
+    <text x="1108" y="328" class="body">逐字判错和清空也阻断自然编辑。</text>
+  </g>
+
+  <text x="58" y="426" class="section">建议流程 / 正确答案本身就是下一步</text>
+  <text x="58" y="456" class="body">测验页不再追加 Continue；保留短暂整题反馈，然后自动推进。只有真实决定才保留按钮。</text>
+
+  <g filter="url(#shadow)">
+    <rect x="58" y="492" width="250" height="218" rx="20" fill="#FFFFFF" stroke="#C6DAD9" stroke-width="1.5"/>
+    <text x="82" y="526" class="step">01 / CARD</text>
+    <text x="82" y="563" class="card-title">词卡</text>
+    <text x="82" y="592" class="body">认识单词、图片与声音</text>
+    <rect x="82" y="624" width="202" height="48" rx="13" fill="#FFC938" stroke="#697E83"/>
+    <text x="183" y="654" class="chip" text-anchor="middle">Try it →</text>
+    <text x="82" y="694" class="small">次要：I know this word</text>
+  </g>
+
+  <path d="M 316 602 H 342" stroke="#536D75" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="350" y="492" width="250" height="218" rx="20" fill="#FFFFFF" stroke="#C6DAD9" stroke-width="1.5"/>
+    <text x="374" y="526" class="step">02 / READ</text>
+    <text x="374" y="563" class="card-title">看词选意思</text>
+    <text x="374" y="592" class="body">整行只有一个答案动作</text>
+    <rect x="374" y="618" width="202" height="52" rx="13" fill="#EDF8DE" stroke="#287A55"/>
+    <text x="394" y="650" class="chip">苹果 🍎</text>
+    <text x="374" y="694" class="small">正确 → 反馈 0.8–1.2s → 自动</text>
+  </g>
+
+  <path d="M 608 602 H 634" stroke="#536D75" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="642" y="492" width="250" height="218" rx="20" fill="#FFFFFF" stroke="#C6DAD9" stroke-width="1.5"/>
+    <text x="666" y="526" class="step">03 / LISTEN</text>
+    <text x="666" y="563" class="card-title">听音选意思</text>
+    <text x="666" y="592" class="body">进入时播放；重播是辅助</text>
+    <rect x="666" y="618" width="202" height="52" rx="13" fill="#DCF2FF" stroke="#275D7D"/>
+    <text x="767" y="650" class="chip" text-anchor="middle">🔊 Replay</text>
+    <text x="666" y="694" class="small">选择正确 → 自动进入拼写</text>
+  </g>
+
+  <path d="M 900 602 H 926" stroke="#536D75" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="934" y="492" width="250" height="218" rx="20" fill="#FFFFFF" stroke="#C6DAD9" stroke-width="1.5"/>
+    <text x="958" y="526" class="step">04 / SPELL</text>
+    <text x="958" y="563" class="card-title">自然拼写</text>
+    <text x="958" y="592" class="body">一个原生输入框</text>
+    <rect x="958" y="618" width="202" height="52" rx="13" fill="#FFFFFF" stroke="#697E83" stroke-width="1.5"/>
+    <text x="1059" y="651" font-size="22" text-anchor="middle">apple</text>
+    <text x="958" y="694" class="small">Enter / Done：整词检查</text>
+  </g>
+
+  <path d="M 1192 602 H 1218" stroke="#536D75" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="1226" y="492" width="316" height="218" rx="20" fill="#FFFFFF" stroke="#C6DAD9" stroke-width="1.5"/>
+    <text x="1250" y="526" class="step">05 / SENTENCE</text>
+    <text x="1250" y="563" class="card-title">例句</text>
+    <text x="1250" y="592" class="body">整句可重播，阅读节奏由孩子控制</text>
+    <rect x="1250" y="624" width="268" height="48" rx="13" fill="#FFC938" stroke="#697E83"/>
+    <text x="1384" y="654" class="chip" text-anchor="middle">Next word / Finish →</text>
+    <text x="1250" y="694" class="small">显式继续：这里仍是一个真实决定</text>
+  </g>
+
+  <path d="M 1384 718 V 744 H 183 V 720" fill="none" stroke="#536D75" stroke-width="2" stroke-dasharray="7 7" marker-end="url(#arrow)"/>
+  <rect x="664" y="731" width="272" height="38" rx="19" fill="#EDF8DE" stroke="#ACDF82"/>
+  <text x="800" y="756" class="chip" text-anchor="middle">还有词：回到下一张词卡</text>
+
+  <text x="58" y="828" class="section">拼写合并 / 从“双重显示”变为普通输入</text>
+
+  <g filter="url(#shadow)">
+    <rect x="58" y="858" width="644" height="246" rx="20" fill="#FFF5F2" stroke="#F4B4A8" stroke-width="1.5"/>
+    <text x="86" y="896" class="step" fill="#A54E41">CURRENT</text>
+    <text x="86" y="932" class="card-title">输入框 + 字母格 + 逐字清空</text>
+    <rect x="86" y="959" width="588" height="56" rx="12" fill="#FFFFFF" stroke="#697E83"/>
+    <text x="380" y="995" font-size="22" text-anchor="middle">app</text>
+    <g transform="translate(222 1035)">
+      <rect x="0" y="0" width="48" height="44" rx="9" fill="#DCF2FF" stroke="#275D7D"/><text x="24" y="29" font-size="19" text-anchor="middle">a</text>
+      <rect x="58" y="0" width="48" height="44" rx="9" fill="#DCF2FF" stroke="#275D7D"/><text x="82" y="29" font-size="19" text-anchor="middle">p</text>
+      <rect x="116" y="0" width="48" height="44" rx="9" fill="#DCF2FF" stroke="#275D7D"/><text x="140" y="29" font-size="19" text-anchor="middle">p</text>
+      <rect x="174" y="0" width="48" height="44" rx="9" fill="#FFFFFF" stroke="#697E83" stroke-dasharray="4 4"/>
+      <rect x="232" y="0" width="48" height="44" rx="9" fill="#FFFFFF" stroke="#697E83" stroke-dasharray="4 4"/>
+    </g>
+  </g>
+
+  <path d="M 722 982 H 868" stroke="#536D75" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="795" y="966" class="chip" text-anchor="middle">合并</text>
+
+  <g filter="url(#shadow)">
+    <rect x="888" y="858" width="654" height="246" rx="20" fill="#F2FAEA" stroke="#ACDF82" stroke-width="1.5"/>
+    <text x="916" y="896" class="step">PROPOSED</text>
+    <text x="916" y="932" class="card-title">单一输入框 + 整词反馈</text>
+    <rect x="916" y="959" width="598" height="66" rx="14" fill="#FFFFFF" stroke="#275D7D" stroke-width="2"/>
+    <text x="1215" y="1001" font-size="26" text-anchor="middle">apple</text>
+    <circle cx="938" cy="1065" r="13" fill="#287A55"/>
+    <path d="M932 1065l4 4 8-9" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="960" y="1071" class="body">正确：整体成功并自动继续</text>
+    <text x="1250" y="1071" class="body">错误：保留可编辑文本，不标单字母</text>
+  </g>
+
+  <text x="58" y="1162" class="section">交互边界</text>
+  <g>
+    <rect x="58" y="1185" width="355" height="82" rx="16" fill="#FFFFFF" stroke="#C6DAD9"/>
+    <text x="82" y="1218" class="card-title">自动推进</text>
+    <text x="82" y="1247" class="body">看词、听音、拼写正确后</text>
+
+    <rect x="438" y="1185" width="355" height="82" rx="16" fill="#FFFFFF" stroke="#C6DAD9"/>
+    <text x="462" y="1218" class="card-title">显式按钮</text>
+    <text x="462" y="1247" class="body">Try it、Next word、Finish</text>
+
+    <rect x="818" y="1185" width="355" height="82" rx="16" fill="#FFFFFF" stroke="#C6DAD9"/>
+    <text x="842" y="1218" class="card-title">必须确认</text>
+    <text x="842" y="1247" class="body">跳过、离开、改变学习记录</text>
+
+    <rect x="1198" y="1185" width="344" height="82" rx="16" fill="#FFFFFF" stroke="#C6DAD9"/>
+    <text x="1222" y="1218" class="card-title">必要恢复</text>
+    <text x="1222" y="1247" class="body">声音、保存、跨页冲突失败</text>
+  </g>
+
+  <text x="58" y="1302" class="small">08-interaction-revision · Implemented · Refer to ../INTERACTION_AUDIT_2026-10-20.md</text>
+</svg>

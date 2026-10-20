@@ -1,6 +1,6 @@
 import { byId, CONTENT_VERSION, getWord } from '../data/catalog'
 import type { AppState, Session } from '../data/types'
-import { freshState, reduce, type Action } from '../domain/session'
+import { freshState, normalizeSpelling, reduce, validSpellingInput, type Action } from '../domain/session'
 import { localDay } from '../domain/progress'
 
 export const STORAGE_KEY = 'little-english-850'
@@ -24,19 +24,18 @@ function validSession(value: unknown, state: AppState): value is Session {
   if (value.mode === 'lesson' && (!integer(value.lessonId, 1, 170) || !value.wordIds.every(id => getWord(id).lessonId === value.lessonId))) return false
   if (value.mode === 'review' && (value.lessonId !== null || !value.wordIds.every(id => state.words[id]?.teaching === 'completed'))) return false
   const questions = value.mode === 'review' ? ['spell', 'listen', 'read', 'sentence'] : ['card', 'read', 'listen', 'spell', 'sentence']
-  if (!questions.includes(String(value.question)) || typeof value.input !== 'string' || !/^[a-z]*$/.test(value.input)) return false
+  if (!questions.includes(String(value.question)) || typeof value.input !== 'string' || !validSpellingInput(value.input)) return false
   if (!bool(value.hintOpen) || !bool(value.heard) || !bool(value.settled) || ![null, 'correct', 'retry', 'letters'].includes(value.feedback as string | null)) return false
   if (!object(value.flags) || !object(value.choices)) return false
   const current = getWord(value.wordIds[value.index])
-  const answer = current.word.toLowerCase().replace(/[^a-z]/g, '')
-  if (!answer.startsWith(value.input)) return false
+  const answer = normalizeSpelling(current.word)
   for (const quiz of ['read', 'listen', 'spell']) {
     const flag = value.flags[quiz]
     if (!object(flag) || !bool(flag.done) || !bool(flag.error) || !bool(flag.hint)) return false
     const position = questions.indexOf(quiz)
     if (position < questions.indexOf(String(value.question)) && !flag.done) return false
     if (position > questions.indexOf(String(value.question)) && flag.done) return false
-    if (quiz === 'spell' && value.question === 'spell' && flag.done && value.input !== answer) return false
+    if (quiz === 'spell' && value.question === 'spell' && flag.done && normalizeSpelling(value.input) !== answer) return false
   }
   const allDone = ['read', 'listen', 'spell'].every(q => (value.flags as Record<string, {done: boolean}>)[q].done)
   if (value.settled !== allDone || value.completed !== value.index + (value.settled ? 1 : 0)) return false
@@ -82,7 +81,7 @@ export function parseState(raw: string | null): AppState {
     && session.flags?.spell?.done === true
     && ['read', 'listen', 'spell'].every(quiz => object(session.flags[quiz as keyof Session['flags']]) && session.flags[quiz as keyof Session['flags']].hint === true)
     && Array.isArray(session.wordIds) && integer(session.index, 0, session.wordIds.length - 1) && byId.has(session.wordIds[session.index])) {
-    session.input = getWord(session.wordIds[session.index]).word.toLowerCase().replace(/[^a-z]/g, '')
+    session.input = normalizeSpelling(getWord(session.wordIds[session.index]).word)
     session.feedback = 'correct'
   }
   if (value.session !== null && !validSession(value.session, state)) return invalid()

@@ -8,20 +8,18 @@ async function stored(page: Page) { return page.evaluate(key => JSON.parse(local
 async function start(page: Page) {
   await page.goto('./')
   await page.getByRole('button', { name: '开始学单词', exact: true }).click()
-  await page.getByRole('button', { name: 'Skip', exact: true }).click()
 }
 async function hear(page: Page) {
-  await page.getByRole('button', { name: 'Listen', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Listen again', exact: true })).toBeVisible()
 }
 async function prepareSpell(page: Page, meaning = '苹果') {
   await page.getByRole('button', { name: 'Try it', exact: true }).click()
   await page.getByRole('button', { name: meaning, exact: true }).click()
-  await page.getByRole('button', { name: 'Continue', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'What do you hear?' })).toBeVisible()
   await expect(page.getByRole('button', { name: meaning, exact: true })).toBeDisabled()
   await hear(page)
   await page.getByRole('button', { name: meaning, exact: true }).click()
-  await page.getByRole('button', { name: 'Continue', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Listen and spell.' })).toBeVisible()
   await hear(page)
 }
 
@@ -65,7 +63,7 @@ test('a known lesson word can be safely confirmed and skipped', async ({ page })
   expect(snapshot.session).toMatchObject({ index: 1, completed: 1, question: 'card', phase: 'active' })
 })
 
-test('five-word lesson, error reset, focus, refresh resume and result', async ({ page }) => {
+test('five-word lesson, whole-answer retry, focus, refresh resume and result', async ({ page }) => {
   test.setTimeout(120_000)
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
@@ -81,19 +79,24 @@ test('five-word lesson, error reset, focus, refresh resume and result', async ({
       expect(await page.locator('main:visible').innerText()).not.toContain('apple')
       await input.pressSequentially('ap')
       await page.reload()
+      await hear(page)
       await expect(input).toHaveValue('ap')
       await input.pressSequentially('x')
-      await expect(input).toHaveValue('')
+      await input.press('Enter')
+      await expect(input).toHaveValue('apx')
+      await expect(page.getByText('Try again', { exact: true })).toBeVisible()
       await expect(input).toBeFocused()
       await page.reload()
+      await hear(page)
       expect((await stored(page)).session.flags.spell.error).toBe(true)
-      await input.pressSequentially('a')
+      await input.fill('a')
       await input.press('Backspace')
       await expect(input).toHaveValue('')
     }
     await input.pressSequentially(word.toUpperCase())
+    await input.press('Enter')
     await expect(page.getByText('Correct!', { exact: true })).toBeVisible()
-    await page.getByRole('button', { name: 'Continue', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Read a sentence.' })).toBeVisible()
     await page.getByRole('button', { name: index === 4 ? 'Finish' : 'Next word', exact: true }).click()
   }
   await expect(page.getByRole('heading', { name: 'All done!' })).toBeVisible()
@@ -107,30 +110,25 @@ test('five-word lesson, error reset, focus, refresh resume and result', async ({
   expect(errors).toEqual([])
 })
 
-test('paste and whole-word replacement cannot pass, hints clear input on close', async ({ page }) => {
+test('natural whole-word editing keeps wrong text and accepts replacement input', async ({ page }) => {
   await start(page)
   await prepareSpell(page)
   const input = page.getByRole('textbox', { name: 'Type the word you hear' })
-  await input.fill('apple')
-  await expect(input).toHaveValue('')
+  await input.fill('apxle')
+  await input.press('Enter')
+  await expect(input).toHaveValue('apxle')
+  await expect(page.getByText('Try again', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Continue', exact: true })).toHaveCount(0)
-  await input.dispatchEvent('paste')
-  await expect(input).toHaveValue('')
-  await input.pressSequentially('ap')
-  await page.getByRole('button', { name: 'Hint' }).click()
-  await expect(page.getByRole('dialog')).toBeVisible()
-  await page.getByRole('button', { name: 'Close hint' }).click()
-  await expect(input).toHaveValue('')
-  await expect(input).toBeFocused()
-  await page.reload()
-  expect((await stored(page)).session.flags.spell.hint).toBe(true)
+  await expect(page.getByRole('button', { name: 'Hint' })).toHaveCount(0)
+  await input.fill('APPLE')
+  await input.press('Enter')
+  await expect(page.getByText('Correct!', { exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Read a sentence.' })).toBeVisible()
 })
 
 test('failed audio blocks listening answers and supports retry', async ({ page }) => {
   await start(page)
   await page.getByRole('button', { name: 'Try it', exact: true }).click()
-  await page.getByRole('button', { name: '苹果', exact: true }).click()
-  await page.getByRole('button', { name: 'Continue', exact: true }).click()
   // WebKit's platform media loader bypasses Playwright request interception.
   // Reject play() at the media boundary to exercise the same failure UI in all engines.
   await page.evaluate(() => {
@@ -138,15 +136,17 @@ test('failed audio blocks listening answers and supports retry', async ({ page }
     HTMLMediaElement.prototype.play = function () { return this.src.endsWith('apple-word.mp3') ? Promise.reject(new DOMException('Media unavailable', 'NotSupportedError')) : original.call(this) }
     ;(window as typeof window & { restoreAudio?: () => void }).restoreAudio = () => { HTMLMediaElement.prototype.play = original }
   })
-  await page.getByRole('button', { name: 'Listen', exact: true }).click()
+  await page.getByRole('button', { name: '苹果', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'What do you hear?' })).toBeVisible()
   await expect(page.getByRole('alert')).toContainText('Sound is unavailable')
   await expect(page.getByRole('button', { name: '苹果', exact: true })).toBeDisabled()
   await page.evaluate(() => (window as typeof window & { restoreAudio?: () => void }).restoreAudio?.())
+  await page.getByRole('button', { name: 'Listen', exact: true }).click()
   await hear(page)
   await expect(page.getByRole('button', { name: '苹果', exact: true })).toBeEnabled()
 })
 
-test('sentence rows play with click and keyboard, while option audio does not answer', async ({ page }) => {
+test('sentence rows play with click and keyboard, while each quiz row is one action', async ({ page }) => {
   const initial = freshState()
   initial.settings.onboardingSeen = true
   initial.settings.spokenGuidance = false
@@ -167,10 +167,9 @@ test('sentence rows play with click and keyboard, while option audio does not an
   }
   await page.getByRole('button', { name: 'Try it', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'What does apple mean?' })).toHaveCSS('font-weight', '400')
-  const optionSound = page.getByRole('button', { name: 'Play meaning: 苹果', exact: true })
-  await optionSound.click()
-  await expect(optionSound).toHaveClass(/playing/)
-  await expect(optionSound).not.toHaveClass(/playing/)
+  await expect(page.getByRole('button', { name: /^Play meaning:/ })).toHaveCount(0)
+  await expect(page.locator('.choice-row')).toHaveCount(3)
+  await expect(page.locator('.choice-row button')).toHaveCount(0)
   expect((await stored(page)).session.flags.read.done).toBe(false)
   await expect(page.getByRole('button', { name: 'Continue', exact: true })).toHaveCount(0)
   await page.getByRole('button', { name: '苹果', exact: true }).click()
@@ -199,7 +198,8 @@ test('wordbook practice preserves the formal session and marks current review hi
   await page.getByRole('button', { name: '练练这个词' }).click()
   await prepareSpell(page)
   await page.getByRole('textbox').pressSequentially('apple')
-  await page.getByRole('button', { name: 'Continue', exact: true }).click()
+  await page.getByRole('textbox').press('Enter')
+  await expect(page.getByRole('heading', { name: 'Read a sentence.' })).toBeVisible()
   await page.getByRole('button', { name: 'Finish', exact: true }).click()
   await page.getByRole('button', { name: 'Back to word', exact: true }).click()
   snapshot = await stored(page)
@@ -238,6 +238,7 @@ test('completed review spelling survives a wordbook visit and reload', async ({ 
   await page.getByRole('button', { name: '复习一下', exact: true }).click()
   await hear(page)
   await page.getByRole('textbox').pressSequentially('apple')
+  await page.getByRole('textbox').press('Enter')
   await expect(page.getByText('Correct!', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Pause', exact: true }).click()
   await page.getByRole('link', { name: 'Wordbook', exact: true }).click()
@@ -248,10 +249,9 @@ test('completed review spelling survives a wordbook visit and reload', async ({ 
   await expect(page.getByRole('heading', { name: 'apple', exact: true })).toBeVisible()
   await page.getByRole('link', { name: '继续正在学的内容' }).click()
   await expect(page.getByText('Correct!', { exact: true })).toBeVisible()
-  await page.getByRole('button', { name: 'Continue', exact: true }).click()
   await hear(page)
   await page.getByRole('button', { name: '苹果', exact: true }).click()
-  await page.getByRole('button', { name: 'Continue', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'What does apple mean?' })).toBeVisible()
   await page.getByRole('button', { name: '苹果', exact: true }).click()
   const saved = await stored(page)
   expect(saved.words['ogden-apple'].reviewStep).toBe(0)
@@ -273,7 +273,6 @@ test('a second tab blocks stale editing and reloads the current exercise', async
   await second.goto('./')
   await expect(second.getByRole('button', { name: '开始学单词', exact: true })).toBeVisible()
   await page.getByRole('button', { name: '开始学单词', exact: true }).click()
-  await page.getByRole('button', { name: 'Skip', exact: true }).click()
   await expect(second.getByRole('heading', { name: '另一页更新了学习记录' })).toBeVisible()
   await second.getByRole('button', { name: '读取最新进度' }).click()
   await second.getByRole('button', { name: '继续学', exact: true }).click()

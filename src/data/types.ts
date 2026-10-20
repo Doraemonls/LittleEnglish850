@@ -7,18 +7,14 @@ export interface Word {
   id: string
   word: string
   lessonId: number
-  position: number
-  category: string
   meaning: string
-  partOfSpeech: string
   context: string
   illustration: string
   sentence: string
   sentenceZh: string
   support: { word: string; meaning: string; audio: string }[]
   options: string[]
-  audio: { word: string; sentence: string; meaning: string }
-  sources: string[]
+  audio: { word: string; sentence: string }
 }
 
 export interface WordProgress {

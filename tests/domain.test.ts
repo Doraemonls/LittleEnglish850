@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { getWord, words, CONTENT_VERSION } from '../src/data/catalog'
 import type { AppState, WordProgress } from '../src/data/types'
 import { addDays, counts, dueWords, lessonStatus, localDay, mainAction, nextLesson, reviewed, statusOf } from '../src/domain/progress'
-import { createSession, freshState, reduce, spellEdit, stepSession, type Action } from '../src/domain/session'
+import { createSession, freshState, normalizeSpelling, reduce, stepSession, type Action } from '../src/domain/session'
 import { createStore, parseState, STORAGE_KEY } from '../src/services/storage'
 import { makeExport } from '../src/services/export'
 import { resolveAudioUrl } from '../src/services/audio'
@@ -25,7 +25,8 @@ function finishQuestions(initial: AppState, today = day): AppState {
     else {
       state = act(state, { type: 'heard' }, today)
       if (session.question === 'spell') {
-        for (const letter of word.word.toLowerCase().replace(/[^a-z]/g, '').slice(state.session!.input.length)) state = act(state, { type: 'spell', edit: { kind: 'insert', value: letter } }, today)
+        state = act(state, { type: 'spellInput', value: word.word }, today)
+        state = act(state, { type: 'submitSpell' }, today)
       } else state = act(state, { type: 'answer', choice: word.id }, today)
       state = act(state, { type: 'next' }, today)
     }
@@ -34,29 +35,33 @@ function finishQuestions(initial: AppState, today = day): AppState {
 }
 
 describe('spelling', () => {
-  it.each(['', 'ap', 'appl'])('clears the whole word after an error at %s', prefix => {
-    expect(spellEdit('apple', prefix, { kind: 'insert', value: 'x' })).toMatchObject({ input: '', error: true, done: false })
+  it('normalizes case and surrounding whitespace only when checking the whole answer', () => {
+    expect(normalizeSpelling('  ApPlE ')).toBe('apple')
+    expect(normalizeSpelling('ice cream')).toBe('ice cream')
   })
-  it('accepts uppercase and backspace and only completes a whole word', () => {
-    expect(spellEdit('apple', '', { kind: 'insert', value: 'A' })).toMatchObject({ input: 'a', done: false })
-    expect(spellEdit('apple', 'app', { kind: 'delete' })).toMatchObject({ input: 'ap', done: false })
-    expect(spellEdit('apple', 'appl', { kind: 'insert', value: 'e' })).toMatchObject({ input: 'apple', done: true })
-  })
-  it('excludes fixed separators and rejects replacement and multi-letter input', () => {
-    expect(spellEdit('ice-cream', 'icecrea', { kind: 'insert', value: 'm' })).toMatchObject({ done: true })
-    expect(spellEdit('apple', '', { kind: 'insert', value: 'apple' })).toMatchObject({ done: false, rejected: true })
-    expect(spellEdit('apple', 'ap', { kind: 'reject' })).toMatchObject({ input: '', error: true })
-  })
-  it('requires successful listening and preserves mistakes and hints through a retry', () => {
+  it('requires successful listening and keeps an incorrect answer editable', () => {
     let session = createSession('review', ['ogden-apple'], null)
-    expect(stepSession(session, { type: 'spell', edit: { kind: 'insert', value: 'a' } })).toBe(session)
+    expect(stepSession(session, { type: 'spellInput', value: 'apple' })).toBe(session)
+    expect(stepSession(session, { type: 'submitSpell' })).toBe(session)
     session = stepSession(session, { type: 'heard' })
-    session = stepSession(session, { type: 'spell', edit: { kind: 'insert', value: 'x' } })
+    session = stepSession(session, { type: 'spellInput', value: 'apxle' })
+    session = stepSession(session, { type: 'submitSpell' })
+    expect(session).toMatchObject({ input: 'apxle', feedback: 'retry', flags: { spell: { done: false, error: true } } })
+    session = stepSession(session, { type: 'spellInput', value: 'APPLE' })
+    expect(session).toMatchObject({ input: 'APPLE', feedback: null })
+    session = stepSession(session, { type: 'submitSpell' })
+    expect(session.flags.spell).toEqual({ done: true, error: true, hint: false })
+    expect(session.input).toBe('APPLE')
+  })
+  it('preserves legacy hint tracking without exposing it in the routine flow', () => {
+    let session = createSession('review', ['ogden-apple'], null)
+    session = stepSession(session, { type: 'heard' })
+    session = stepSession(session, { type: 'spellInput', value: 'ap' })
     session = stepSession(session, { type: 'hint', open: true })
     session = stepSession(session, { type: 'hint', open: false })
-    for (const value of 'apple') session = stepSession(session, { type: 'spell', edit: { kind: 'insert', value } })
-    expect(session.flags.spell).toEqual({ done: true, error: true, hint: true })
-    expect(session.hintOpen).toBe(false)
+    session = stepSession(session, { type: 'spellInput', value: 'apple' })
+    session = stepSession(session, { type: 'submitSpell' })
+    expect(session.flags.spell).toEqual({ done: true, error: false, hint: true })
   })
 })
 
@@ -98,7 +103,8 @@ describe('calendar and review', () => {
     state.words['ogden-apple'] = learned({ reviewStep: 2, lastReviewedOn: '2026-09-30', nextReviewOn: day })
     state = act(state, { type: 'start', mode: 'review' })
     state = act(state, { type: 'heard' })
-    state = act(state, { type: 'spell', edit: { kind: 'insert', value: 'x' } })
+    state = act(state, { type: 'spellInput', value: 'x' })
+    state = act(state, { type: 'submitSpell' })
     state = parseState(JSON.stringify(state))
     state = finishQuestions(state, '2026-10-09')
     expect(state.words['ogden-apple']).toEqual(learned({ reviewStep: 0, lastReviewedOn: '2026-10-09', nextReviewOn: '2026-10-10' }))
@@ -110,7 +116,8 @@ describe('calendar and review', () => {
     state.words['ogden-apple'] = learned({ reviewStep: 2, lastReviewedOn: '2026-09-30', nextReviewOn: day })
     state = act(state, { type: 'start', mode: 'review' })
     state = act(state, { type: 'heard' })
-    for (const value of 'apple') state = act(state, { type: 'spell', edit: { kind: 'insert', value } })
+    state = act(state, { type: 'spellInput', value: 'apple' })
+    state = act(state, { type: 'submitSpell' })
     state = act(state, { type: 'peek', wordId: 'ogden-apple' })
     expect(state.session!.input).toBe('apple')
     state = parseState(JSON.stringify(state))
@@ -213,7 +220,8 @@ describe('storage and TSV', () => {
     state.words['ogden-apple'] = learned({ nextReviewOn: day })
     state = act(state, { type: 'start', mode: 'review' })
     state = act(state, { type: 'heard' })
-    for (const value of 'apple') state = act(state, { type: 'spell', edit: { kind: 'insert', value } })
+    state = act(state, { type: 'spellInput', value: 'apple' })
+    state = act(state, { type: 'submitSpell' })
     state = act(state, { type: 'peek', wordId: 'ogden-apple' })
     state.session!.input = ''
     state.session!.feedback = null

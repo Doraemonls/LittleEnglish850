@@ -1,18 +1,13 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { getWord } from '../data/catalog'
+import { useEffect, useRef, type FormEvent } from 'react'
 import type { Session } from '../data/types'
-import type { SpellEdit } from '../domain/session'
 
-export function SpellingInput({ session, onEdit }: { session: Session; onEdit: (edit: SpellEdit) => void }) {
+export function SpellingInput({ session, onInput, onSubmit }: { session: Session; onInput: (value: string) => void; onSubmit: () => void }) {
   const input = useRef<HTMLInputElement>(null)
-  const [composition, setComposition] = useState<string | null>(null)
-  const composing = useRef(false)
-  const justComposed = useRef(false)
   const done = session.flags.spell.done
-  const word = getWord(session.wordIds[session.index])
-  const targetLetters = word.word.toLowerCase().replace(/[^a-z]/g, '')
-  const currentInput = composition ?? session.input
   useEffect(() => { if (session.heard && !done && !session.hintOpen) input.current?.focus() }, [session.heard, session.hintOpen, done])
+  useEffect(() => {
+    if (session.feedback === 'retry') input.current?.select()
+  }, [session.feedback])
   useEffect(() => {
     const reveal = () => {
       const viewportHeight = window.visualViewport?.height ?? window.innerHeight
@@ -27,51 +22,14 @@ export function SpellingInput({ session, onEdit }: { session: Session; onEdit: (
     window.addEventListener('resize', reveal)
     return () => { window.visualViewport?.removeEventListener('resize', reveal); window.removeEventListener('resize', reveal) }
   }, [session.feedback, session.heard, session.hintOpen])
-  const edit = (action: SpellEdit) => {
-    onEdit(action)
-    // The native input is never replaced; mobile keyboards stay open after errors.
-    input.current?.focus()
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    onSubmit()
   }
-  const process = (value: string, type: string) => {
-    if (type === 'deleteContentBackward' && value === session.input.slice(0, -1)) { edit({ kind: 'delete' }); return }
-    if (type === 'insertText' && value.length === session.input.length + 1 && value.slice(0, -1) === session.input) { edit({ kind: 'insert', value: value.slice(-1) }); return }
-    edit({ kind: 'reject' })
-  }
-  const onInput = (event: FormEvent<HTMLInputElement>) => {
-    const element = event.currentTarget
-    const native = event.nativeEvent as InputEvent
-    if (composing.current) { setComposition(element.value); return }
-    if (justComposed.current) { justComposed.current = false; element.value = session.input; return }
-    process(element.value, native.inputType)
-    element.value = session.input
-  }
-  // Keep the answer out of the rendered UI until the child has typed it.
-  // The word's length and domain validation remain independent of the input layout.
-  return <div className="spelling-area">
+  return <form className="spelling-area" onSubmit={submit}>
     <label className="sr-only" htmlFor="spelling">Type the word you hear</label>
-    <input ref={input} id="spelling" className="spelling-input" aria-invalid={session.feedback === 'retry' || session.feedback === 'letters'} value={currentInput} onChange={() => {}} onInput={onInput}
-      onBeforeInput={event => {
-        const native = event.nativeEvent as InputEvent
-        if (!composing.current && ['insertFromPaste', 'insertFromDrop', 'insertReplacementText'].includes(native.inputType)) { event.preventDefault(); edit({ kind: 'reject' }) }
-      }}
-      onPaste={event => { event.preventDefault(); edit({ kind: 'reject' }) }}
-      onDrop={event => { event.preventDefault(); edit({ kind: 'reject' }) }}
-      onCompositionStart={() => { composing.current = true; setComposition(session.input) }}
-      onCompositionEnd={event => {
-        composing.current = false; setComposition(null)
-        justComposed.current = true
-        window.setTimeout(() => { justComposed.current = false }, 0)
-        const value = event.data
-        if (/^[a-z]$/i.test(value)) edit({ kind: 'insert', value }); else edit({ kind: 'reject' })
-      }}
-      onKeyDown={event => { if (event.key === 'Enter') event.preventDefault() }}
-      readOnly={!session.heard || done} autoComplete="off" autoCorrect="off" autoCapitalize="none" spellCheck={false} inputMode="text" lang="en" enterKeyHint="done"/>
-    <div className="letter-slots" aria-hidden="true" onClick={() => input.current?.focus()}>
-      {Array.from({ length: targetLetters.length }).map((_, i) => {
-        const char = currentInput[i]
-        const isCurrent = i === currentInput.length && !done
-        return <span key={i} className={`letter-slot ${char ? 'filled' : ''} ${isCurrent ? 'current' : ''} ${done ? 'done' : ''}`}>{char || ''}</span>
-      })}
-    </div>
-  </div>
+    <input ref={input} id="spelling" className="spelling-input" aria-invalid={session.feedback === 'retry' || session.feedback === 'letters'} value={session.input}
+      onChange={event => onInput(event.currentTarget.value)} readOnly={!session.heard || done} maxLength={64}
+      autoComplete="off" autoCorrect="off" autoCapitalize="none" spellCheck={false} inputMode="text" lang="en" enterKeyHint="done"/>
+  </form>
 }
