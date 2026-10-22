@@ -44,6 +44,7 @@ test('simple child home and working search with retained filters', async ({ page
 
 test('a known lesson word can be safely confirmed and skipped', async ({ page }) => {
   await start(page)
+  await expect(page.locator('.step-dot-label')).toHaveText(['Card', 'Meaning', 'Listen', 'Spell', 'Sentence'])
   const skip = page.getByRole('button', { name: 'I know this word', exact: true })
   await skip.click()
   const dialog = page.getByRole('dialog', { name: 'Skip apple?' })
@@ -101,6 +102,8 @@ test('five-word lesson, whole-answer retry, focus, refresh resume and result', a
   }
   await expect(page.getByRole('heading', { name: 'All done!' })).toBeVisible()
   await expect(page.getByText('You practised 5 words.')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Words you practised' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Listen to apple' })).toBeVisible()
   const snapshot = await stored(page)
   expect(Object.keys(snapshot.words)).toHaveLength(5)
   expect(snapshot.session.retry).toBe(1)
@@ -167,6 +170,7 @@ test('sentence rows play with click and keyboard, while each quiz row is one act
   }
   await page.getByRole('button', { name: 'Try it', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'What does apple mean?' })).toHaveCSS('font-weight', '400')
+  await expect(page.locator('.question-subtitle')).toHaveText('Choose a meaning')
   await expect(page.getByRole('button', { name: /^Play meaning:/ })).toHaveCount(0)
   await expect(page.locator('.choice-row')).toHaveCount(3)
   await expect(page.locator('.choice-row button')).toHaveCount(0)

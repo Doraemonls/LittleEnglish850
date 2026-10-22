@@ -9,7 +9,7 @@ export function AppleIllustration({ size = 96 }: { size?: number }) {
 
 export function BookIllustration() {
   return <svg className="home-book" width="200" height="160" viewBox="0 0 200 160" aria-hidden="true">
-    <rect x="9" y="29" width="174" height="117" rx="5" fill="var(--yellow)"/>
+    <rect x="9" y="29" width="174" height="117" rx="8" fill="var(--yellow)" stroke="var(--ink)" strokeWidth="3"/>
     <path d="M15 21Q53 11 95 30Q128 12 170 22V129Q128 120 95 138Q56 121 15 129Z" fill="white" stroke="var(--ink)" strokeWidth="3" strokeLinejoin="round"/>
     <path d="M95 30V138" stroke="var(--ink)" strokeWidth="3"/>
     <text x="32" y="63" fontSize="20" fontWeight="700" fill="var(--ink)">hello</text>

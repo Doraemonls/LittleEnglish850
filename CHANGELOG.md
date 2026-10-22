@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.0-rc.2 — 2026-10-22
+
+- Refresh surfaces and controls with clearer borders, interaction states and responsive details while removing decorative shadows.
+- Use English consistently for learning steps, prompts, results, controls and learning-route errors; retain Chinese for meanings, contexts and translations.
+- Add browser regression coverage for the English step labels, question guidance and result summary.
+- Expand the README with current features, setup, validation, content-editing, production-preview and project-structure guidance.
+
+Human editorial review, listening review and child usability trials are still required before the final release.
+
 ## 0.1.0-rc.1 — 2026-10-12
 
 - Preserve the complete application and teaching assets in Git; prepare the `release/v0.1.0` branch and candidate tag.

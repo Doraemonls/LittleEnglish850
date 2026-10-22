@@ -12,20 +12,27 @@ import { AudioButton } from '../components/AudioButton'
 import { SpellingInput } from '../components/SpellingInput'
 import { Dialog } from '../components/Dialog'
 
-const titles: Record<string, { en: string; zh: string }> = {
-  card: { en: 'Word card', zh: '看图识词' },
-  read: { en: 'Choose a meaning', zh: '看词选义' },
-  listen: { en: 'What do you hear?', zh: '听音选词' },
-  spell: { en: 'Listen and spell.', zh: '听音拼写' },
-  sentence: { en: 'Read a sentence.', zh: '语境例句' },
+const titles: Record<string, string> = {
+  card: 'Word card',
+  read: 'Choose a meaning',
+  listen: 'What do you hear?',
+  spell: 'Listen and spell.',
+  sentence: 'Read a sentence.',
 }
 
-const stepLabels: Record<string, { en: string; zh: string }> = {
-  card: { en: 'Card', zh: '词卡' },
-  read: { en: 'Meaning', zh: '选义' },
-  listen: { en: 'Listen', zh: '听音' },
-  spell: { en: 'Spell', zh: '拼写' },
-  sentence: { en: 'Sentence', zh: '例句' },
+const prompts: Record<string, string> = {
+  read: 'Choose a meaning',
+  listen: 'Choose a meaning',
+  spell: 'Type the word you hear',
+  sentence: 'Listen and read along',
+}
+
+const stepLabels: Record<string, string> = {
+  card: 'Card',
+  read: 'Meaning',
+  listen: 'Listen',
+  spell: 'Spell',
+  sentence: 'Sentence',
 }
 
 function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (action: ExerciseAction) => void; onExit: () => void }) {
@@ -135,19 +142,19 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
 
   return <main className="learn page" id="main" lang="en">
     <div className="exercise-nav"><span>{label}<span className="round-progress">{session.index + 1} / {session.wordIds.length}</span></span><button className="text-button" onClick={pause}><Icon name="pause"/>{session.mode === 'practice' ? 'Leave' : 'Pause'}</button></div>
-    <div className="step-dots" role="img" aria-label={`Current step: ${titles[question].en}`}>
+    <div className="step-dots" role="img" aria-label={`Current step: ${titles[question]}`}>
       {questions.map((q, idx) => {
         const isPast = idx < currentIdx
         const isCurrent = q === question
-        return <span key={q} className={`step-dot ${isCurrent ? 'current' : ''} ${isPast ? 'done' : ''}`} title={`${stepLabels[q].zh} (${stepLabels[q].en})`}>
-          {isPast ? <Icon name="check" size={13}/> : <span className="step-dot-label">{stepLabels[q].zh}</span>}
+        return <span key={q} className={`step-dot ${isCurrent ? 'current' : ''} ${isPast ? 'done' : ''}`} title={stepLabels[q]}>
+          {isPast ? <Icon name="check" size={13}/> : <span className="step-dot-label">{stepLabels[q]}</span>}
         </span>
       })}
     </div>
     <section className={`exercise-panel ${question}-panel`}>
       {question !== 'card' && <div className="question-header">
-        <h1 className="question-title">{question === 'read' ? <>What does <span className="question-word">{word.word}</span> mean?</> : titles[question].en}</h1>
-        <span className="question-subtitle">{titles[question].zh}</span>
+        <h1 className="question-title">{question === 'read' ? <>What does <span className="question-word">{word.word}</span> mean?</> : titles[question]}</h1>
+        <span className="question-subtitle">{prompts[question]}</span>
       </div>}
       {question === 'card' && <WordCard word={word} language="en"/>}
       {question === 'sentence' && <><div className="sentence-word">{word.word}</div><Sentence word={word} language="en"/></>}
@@ -196,8 +203,8 @@ function Result({ session, onExit, onContinue }: { session: Session; onExit: () 
       <p className="eyebrow">{session.mode === 'lesson' ? `Lesson ${session.lessonId}` : session.mode === 'review' ? 'Review' : 'Practice'}</p>
       <h1>All done!</h1>
       <p className="result-subtitle">You practised {session.completed} {session.completed === 1 ? 'word' : 'words'}.</p>
-      <div className="result-trophy-shelf" aria-label="本轮学习成果">
-        <h2 className="trophy-shelf-title">本轮攻克词汇</h2>
+      <div className="result-trophy-shelf" aria-label="Words practised this round">
+        <h2 className="trophy-shelf-title">Words you practised</h2>
         <div className="trophy-grid">
           {session.wordIds.slice(0, session.completed).map(id => {
             const w = getWord(id)
@@ -207,7 +214,7 @@ function Result({ session, onExit, onContinue }: { session: Session; onExit: () 
                 <strong className="trophy-word" lang="en">{w.word}</strong>
                 <span className="trophy-meaning" lang="zh-CN">{w.meaning}</span>
               </div>
-              <AudioButton src={w.audio.word} label={`听 ${w.word}`} variant="icon" language="en"/>
+              <AudioButton src={w.audio.word} label={`Listen to ${w.word}`} variant="icon" language="en"/>
             </div>
           })}
         </div>

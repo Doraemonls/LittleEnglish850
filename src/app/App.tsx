@@ -24,6 +24,13 @@ export function App() {
   const english = englishAbout || learning
   const theme = learning ? 'learn' : page === 'book' ? 'book' : page === 'parent' ? 'parent' : about ? 'about' : 'home'
   const blocked = status === 'unreadable' || status === 'conflict'
+  const blockedCopy = english
+    ? status === 'conflict'
+      ? { title: 'Another page updated your learning progress', message: 'Learn in one page at a time, then load the latest progress to continue.', action: 'Load latest progress' }
+      : { title: 'Learning progress is temporarily unavailable', message: 'Your existing progress is still in this browser. Try again, or ask a parent to check the browser.', action: 'Try again' }
+    : status === 'conflict'
+      ? { title: '另一页更新了学习记录', message: '请在一个页面里学习，读取最新进度后再继续。', action: '读取最新进度' }
+      : { title: '学习记录暂时无法读取', message: '原有记录保留在浏览器中。请重试读取，或请家长检查浏览器。', action: '重试读取' }
   useLayoutEffect(() => {
     audioPlayer.stop()
     if (page !== 'learn') store.dispatch({ type: 'leaveResult' })
@@ -37,14 +44,14 @@ export function App() {
     <a className="skip-link" href="#main" lang={english ? 'en' : 'zh-CN'} onClick={event => { event.preventDefault(); document.getElementById('main')?.focus() }}>{english ? 'Skip to main content' : '跳到主要内容'}</a>
     {!learning && <header className="site-header"><div className="header-content"><a className="brand" href="#/" aria-label={englishAbout ? 'Little English home' : '小小英语首页'}><span className="brand-icon"><Icon name="book" size={28}/></span><span>小小英语</span></a>{page !== 'parent' && !about && <a className="parent-link" href="#/parent"><Icon name="parent" size={22}/><span>家长</span></a>}</div></header>}
     {status === 'unsaved' && <div className="save-banner" role="alert" lang={english ? 'en' : 'zh-CN'}><span>{english ? 'Progress not saved. Keep this page open.' : '这次进度还没保存，先别关闭页面。'}</span><button className="text-button" onClick={() => store.retry()}>{english ? 'Save again' : '重试保存'}</button></div>}
-    {blocked ? <main className="empty page" id="main"><Icon name="book" size={44}/><h1>{status === 'conflict' ? '另一页更新了学习记录' : '学习记录暂时无法读取'}</h1><p>{status === 'conflict' ? '请在一个页面里学习，读取最新进度后再继续。' : '原有记录保留在浏览器中。请重试读取，或请家长检查浏览器。'}</p><button className="button primary" onClick={() => store.retry()}>{status === 'conflict' ? '读取最新进度' : '重试读取'}</button></main> : <>
+    {blocked ? <main className="empty page" id="main" lang={english ? 'en' : 'zh-CN'}><Icon name="book" size={44}/><h1>{blockedCopy.title}</h1><p>{blockedCopy.message}</p><button className="button primary" onClick={() => store.retry()}>{blockedCopy.action}</button></main> : <>
       {page === 'home' && <Home/>}
       {page === 'learn' && <Learn/>}
       {page === 'practice' && id && byId.has(id) && <Practice key={id} wordId={id}/>}
       <Wordbook visible={page === 'book' && (!id || byId.has(id))} wordId={id}/>
       {page === 'parent' && <Parent/>}
       {about && <About language={englishAbout ? 'en' : 'zh-CN'}/>}
-      {(!['home', 'learn', 'practice', 'book', 'parent', 'about'].includes(page) || (['practice', 'book'].includes(page) && id && !byId.has(id)) || (page === 'practice' && !id) || (page === 'about' && !about)) && <main className="empty page" id="main"><h1>这一页找不到了</h1><a className="button primary" href="#/">返回首页</a></main>}
+      {(!['home', 'learn', 'practice', 'book', 'parent', 'about'].includes(page) || (['practice', 'book'].includes(page) && id && !byId.has(id)) || (page === 'practice' && !id) || (page === 'about' && !about)) && <main className="empty page" id="main" lang={english ? 'en' : 'zh-CN'}><h1>{english ? 'Page not found' : '这一页找不到了'}</h1><a className="button primary" href="#/">{english ? 'Home' : '返回首页'}</a></main>}
     </>}
   </div>
 }
