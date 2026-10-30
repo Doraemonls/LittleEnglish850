@@ -8,7 +8,7 @@ type CompactWord = [
 ]
 interface CompactCatalogue { v: 1; h: CompactHelper[]; w: CompactWord[] }
 
-export const CONTENT_VERSION = 'ogden-850-2026-10-10-v1'
+export const CONTENT_VERSION = 'ogden-850-course-2026-10-30-v2'
 export const words: Word[] = []
 export const byId = new Map<string, Word>()
 export const lessonIds: number[] = []

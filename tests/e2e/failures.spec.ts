@@ -15,6 +15,7 @@ test('catalogue load failure retries without changing saved progress', async ({ 
 
 test('storage write failure keeps in-memory exercise and offers successful retry', async ({ page }) => {
   await page.goto('./')
+  await page.getByRole('button', { name: /标准学习/ }).click()
   await page.getByRole('heading', { name: '一起学单词吧' }).waitFor()
   await page.evaluate(() => {
     const original = Storage.prototype.setItem
@@ -24,7 +25,7 @@ test('storage write failure keeps in-memory exercise and offers successful retry
   await page.getByRole('button', { name: '开始学单词', exact: true }).click()
   await expect(page.getByRole('alert')).toContainText('Progress not saved')
   await page.getByRole('button', { name: 'Try it', exact: true }).click()
-  await page.getByRole('button', { name: '苹果', exact: true }).click()
+  await page.getByRole('button', { name: '我', exact: true }).click()
   await page.evaluate(() => (window as typeof window & { restoreStorage?: () => void }).restoreStorage?.())
   await page.getByRole('button', { name: 'Save again' }).click()
   await expect(page.getByRole('alert')).toHaveCount(0)

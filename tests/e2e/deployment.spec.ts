@@ -3,15 +3,16 @@ import { freshState } from '../../src/domain/session'
 import { STORAGE_KEY } from '../../src/services/storage'
 import { addDays, localDay } from '../../src/domain/progress'
 
-test('startup requests one compact catalogue and leaves audio on demand', async ({ page }) => {
+test('startup requests compact word and course catalogues and leaves audio on demand', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
   await page.goto('./')
-  await expect(page.getByRole('heading', { name: '一起学单词吧' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '选择学习计划' })).toBeVisible()
   const resources = await page.evaluate(() => performance.getEntriesByType('resource').map(entry => ({ name: entry.name, decodedBodySize: (entry as PerformanceResourceTiming).decodedBodySize })))
-  const catalogues = resources.filter(entry => /\/words\.generated(?:-[\w-]+)?\.json$/.test(entry.name))
-  expect(catalogues).toHaveLength(1)
-  expect(catalogues[0].decodedBodySize).toBeLessThan(220_000)
+  const catalogues = resources.filter(entry => /\/(?:words|course)\.generated(?:-[\w-]+)?\.json$/.test(entry.name))
+  expect(catalogues).toHaveLength(2)
+  expect(catalogues.find(entry => entry.name.includes('words.generated'))?.decodedBodySize).toBeLessThan(220_000)
+  expect(catalogues.find(entry => entry.name.includes('course.generated'))?.decodedBodySize).toBeLessThan(100_000)
   expect(resources.some(entry => entry.name.includes('.mp3'))).toBe(false)
   await expect(page.locator('.word-row')).toHaveCount(0)
   await page.goto('./#/parent')
@@ -27,6 +28,7 @@ test('startup requests one compact catalogue and leaves audio on demand', async 
 test('saved progress waits for a delayed catalogue before it is read', async ({ page }) => {
   const state = freshState()
   state.settings.onboardingSeen = true
+  state.settings.planSelected = true
   state.words['ogden-apple'] = { teaching: 'completed', reviewStep: 1, lastReviewedOn: addDays(localDay(), -3), nextReviewOn: localDay() }
   await page.addInitScript(({ key, state }) => localStorage.setItem(key, JSON.stringify(state)), { key: STORAGE_KEY, state })
   await page.route(/\/words\.generated(?:-[\w-]+)?\.json$/, async route => {

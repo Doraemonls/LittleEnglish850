@@ -13,6 +13,7 @@ test('main pages and exercises have no serious accessibility violations', async 
     expect(results.violations).toEqual([])
   }
   await page.goto('./')
+  await page.getByRole('button', { name: /标准学习/ }).click()
   await page.getByRole('button', { name: '开始学单词', exact: true }).click()
   await page.getByRole('button', { name: 'I know this word', exact: true }).click()
   expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([])
@@ -25,6 +26,7 @@ test('independent due review reaches gold only after all three questions', async
   const state = freshState()
   state.settings.onboardingSeen = true
   state.settings.spokenGuidance = false
+  state.settings.planSelected = true
   state.words['ogden-apple'] = { teaching: 'completed', reviewStep: 2, lastReviewedOn: addDays(localDay(), -7), nextReviewOn: localDay() }
   await page.addInitScript(({ key, state }) => { if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(state)) }, { key: STORAGE_KEY, state })
   await page.goto('./')

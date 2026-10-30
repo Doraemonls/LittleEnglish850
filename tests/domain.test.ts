@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { getWord, words, CONTENT_VERSION } from '../src/data/catalog'
+import { courseClasses } from '../src/data/course'
 import type { AppState, WordProgress } from '../src/data/types'
-import { addDays, counts, dueWords, lessonStatus, localDay, mainAction, nextLesson, reviewed, statusOf } from '../src/domain/progress'
+import { addDays, counts, dueWords, lessonStatus, localDay, mainAction, nextClass, nextLesson, reviewed, statusOf } from '../src/domain/progress'
 import { createSession, freshState, normalizeSpelling, reduce, stepSession, type Action } from '../src/domain/session'
 import { createStore, parseState, STORAGE_KEY } from '../src/services/storage'
 import { makeExport } from '../src/services/export'
@@ -32,6 +33,20 @@ function finishQuestions(initial: AppState, today = day): AppState {
     }
   }
   throw new Error('Unexpected session loop')
+}
+function finishClass(initial: AppState, today = day): AppState {
+  let state = initial
+  while (state.session?.phase === 'active') {
+    state = finishQuestions(state, today)
+    state = act(state, { type: 'next' }, today)
+  }
+  while (state.session?.phase === 'exit-test') {
+    const item = state.session.exitTest!.items[state.session.exitTest!.index]
+    state = act(state, { type: 'sentenceTestInput', value: item.displayAnswer }, today)
+    state = act(state, { type: 'submitSentenceTest' }, today)
+    state = act(state, { type: 'nextSentenceTest' }, today)
+  }
+  return state
 }
 
 describe('spelling', () => {
@@ -140,18 +155,17 @@ describe('calendar and review', () => {
 })
 
 describe('formal session and derived progress', () => {
-  it('skips known lesson words into learned status and can finish on a skip', () => {
+  it('skips known class words into learned status and can finish when all are skipped', () => {
     let state = act(freshState(), { type: 'start', mode: 'lesson' })
+    const total = state.session!.wordIds.length
     const firstId = state.session!.wordIds[0]
     state = act(state, { type: 'skip' })
     expect(state.words[firstId]).toEqual(learned())
     expect(state.session).toMatchObject({ index: 1, completed: 1, question: 'card', phase: 'active', retry: 0 })
     expect(state.words[state.session!.wordIds[1]].teaching).toBe('started')
-    state = act(state, { type: 'skip' })
-    expect(state.session!.completed).toBe(2)
-    for (let index = 2; index < 5; index++) state = act(state, { type: 'skip' })
-    expect(state.session).toMatchObject({ index: 4, completed: 5, question: 'sentence', phase: 'result', settled: true })
-    expect(counts(state)).toEqual({ unstarted: 845, started: 0, learned: 5, mastered: 0 })
+    for (let index = 1; index < total; index++) state = act(state, { type: 'skip' })
+    expect(state.session).toMatchObject({ index: total - 1, completed: total, phase: 'result', exitTest: null })
+    expect(counts(state)).toEqual({ unstarted: 850 - total, started: 0, learned: total, mastered: 0 })
     expect(lessonStatus(state, 1)).toBe('已学过')
   })
   it('ignores skip outside a new-lesson word card', () => {
@@ -163,28 +177,63 @@ describe('formal session and derived progress', () => {
     const review = act(reviewState, { type: 'start', mode: 'review' })
     expect(act(review, { type: 'skip' })).toBe(review)
   })
-  it('completes a five-word lesson with atomic resumable transitions', () => {
+  it('completes a class only after its fixed-sentence test', () => {
     let state = act(freshState(), { type: 'start', mode: 'lesson' })
+    const ids = [...state.session!.wordIds]
     const options = state.session!.choices
     expect(parseState(JSON.stringify(state)).session!.choices).toEqual(options)
     expect(counts(state).started).toBe(1)
-    for (let i = 0; i < 5; i++) {
-      state = finishQuestions(state)
-      expect(state.session!.completed).toBe(i + 1)
-      state = act(state, { type: 'next' })
-    }
+    while (state.session!.phase === 'active') { state = finishQuestions(state); state = act(state, { type: 'next' }) }
+    expect(state.session!.phase).toBe('exit-test')
+    expect(ids.every(id => state.words[id]?.teaching !== 'completed')).toBe(true)
+    state = finishClass(state)
     expect(state.session!.phase).toBe('result')
-    expect(counts(state)).toEqual({ unstarted: 845, started: 0, learned: 5, mastered: 0 })
+    expect(counts(state)).toEqual({ unstarted: 850 - ids.length, started: 0, learned: ids.length, mastered: 0 })
     expect(lessonStatus(state, 1)).toBe('已学过')
-    expect(state.words['ogden-apple'].nextReviewOn).toBe('2026-10-09')
+    expect(state.words[ids[0]].nextReviewOn).toBe('2026-10-09')
     state = act(state, { type: 'leaveResult' })
     expect(state.session).toBeNull()
     expect(mainAction(state, day)).toBe('lesson')
     expect(mainAction(state, '2026-10-09')).toBe('review')
   })
+  it('records a sentence-test mistake, resumes it, and requires a correct word', () => {
+    let state = act(freshState(), { type: 'start', mode: 'lesson' })
+    while (state.session!.phase === 'active') { state = finishQuestions(state); state = act(state, { type: 'next' }) }
+    const item = state.session!.exitTest!.items[0]
+    state = act(state, { type: 'sentenceTestInput', value: 'wrong' })
+    state = act(state, { type: 'submitSentenceTest' })
+    expect(state.session!.exitTest!.results[item.wordId]).toEqual({ firstAttemptCorrect: false, attempts: 1, correct: false })
+    expect(parseState(JSON.stringify(state))).toEqual(state)
+    expect(act(state, { type: 'nextSentenceTest' })).toBe(state)
+    state = act(state, { type: 'sentenceTestInput', value: item.displayAnswer.toUpperCase() })
+    state = act(state, { type: 'submitSentenceTest' })
+    expect(state.session!.exitTest!.results[item.wordId]).toEqual({ firstAttemptCorrect: false, attempts: 2, correct: true })
+  })
+  it('uses the accelerated plan for the next class without duplicating progress', () => {
+    let state = freshState()
+    state.settings.learningPlan = 'accelerated'
+    state = act(state, { type: 'start', mode: 'lesson' })
+    expect(state.session).toMatchObject({ classId: 'accelerated-001', planAtStart: 'accelerated' })
+    expect(state.session!.wordIds).toHaveLength(6)
+  })
+  it('reassembles a full-sized class when switching plans after partial progress', () => {
+    let state = freshState()
+    for (let completedClasses = 0; completedClasses < 2; completedClasses++) {
+      state = act(state, { type: 'start', mode: 'lesson' })
+      state = finishClass(state)
+      state = act(state, { type: 'leaveResult' })
+    }
+    state.settings.learningPlan = 'accelerated'
+    const upcoming = nextClass(state)!
+    expect(upcoming.wordIds.length).toBeGreaterThanOrEqual(6)
+    expect(upcoming.wordIds.length).toBeLessThanOrEqual(8)
+    expect(upcoming.wordIds.every(id => state.words[id]?.teaching !== 'completed')).toBe(true)
+    state = act(state, { type: 'start', mode: 'lesson' })
+    expect(state.session).toMatchObject({ classId: upcoming.id, groupIds: upcoming.groupIds, wordIds: upcoming.wordIds, planAtStart: 'accelerated' })
+  })
   it('keeps only one formal session, preserves practice isolation, and prioritizes continue', () => {
     const state = act(freshState(), { type: 'start', mode: 'lesson' })
-    expect(act(state, { type: 'start', mode: 'lesson', lessonId: 2 })).toBe(state)
+    expect(act(state, { type: 'start', mode: 'lesson', classId: 'standard-002' })).toBe(state)
     expect(act(state, { type: 'start', mode: 'review' })).toBe(state)
     expect(mainAction(state, day)).toBe('continue')
     const snapshot = JSON.stringify(state)
@@ -196,26 +245,40 @@ describe('formal session and derived progress', () => {
   })
   it('does not reverse cumulative teaching or course completion after failed review', () => {
     const state = freshState()
-    for (const word of words.slice(0, 5)) state.words[word.id] = learned({ reviewStep: 3 })
-    expect(counts(state).mastered).toBe(5)
-    state.words['ogden-apple'] = reviewed(state.words['ogden-apple'], false, '2026-10-09')
-    expect(counts(state).learned + counts(state).mastered).toBe(5)
+    const ids = courseClasses.standard[0].wordIds
+    for (const id of ids) state.words[id] = learned({ reviewStep: 3 })
+    expect(counts(state).mastered).toBe(ids.length)
+    state.words[ids[0]] = reviewed(state.words[ids[0]], false, '2026-10-09')
+    expect(counts(state).learned + counts(state).mastered).toBe(ids.length)
     expect(lessonStatus(state, 1)).toBe('已学过')
-    expect(statusOf(state.words['ogden-apple'])).toBe('learned')
+    expect(statusOf(state.words[ids[0]])).toBe('learned')
   })
-  it('finishes the final lesson without offering a nonexistent next lesson', () => {
+  it('finishes the final class without offering nonexistent content', () => {
     let state = freshState()
-    for (const word of words.slice(0, -5)) state.words[word.id] = learned()
+    const finalClass = courseClasses.standard.at(-1)!
+    const finalIds = new Set(finalClass.wordIds)
+    for (const word of words) if (!finalIds.has(word.id)) state.words[word.id] = learned()
     state = act(state, { type: 'start', mode: 'lesson' })
-    expect(state.session!.lessonId).toBe(170)
-    for (let i = 0; i < 5; i++) { state = finishQuestions(state); state = act(state, { type: 'next' }) }
+    expect(state.session!.classId).toBe('standard-170')
+    state = finishClass(state)
     expect(nextLesson(state)).toBeNull()
     expect(mainAction(state, day)).toBe('wordbook')
   })
 })
 
 describe('storage and TSV', () => {
-  it('recovers the old completed-spelling peek snapshot without changing word progress', () => {
+  it('migrates schema-1 progress to Standard and drops only an unsettled word', () => {
+    const legacy = {
+      schemaVersion: 1, contentVersion: 'ogden-850-2026-10-10-v1', session: null,
+      words: { 'ogden-apple': learned(), 'ogden-ball': { teaching: 'started', reviewStep: 0, lastReviewedOn: null, nextReviewOn: null } },
+      settings: { volume: .5, spokenGuidance: false, onboardingSeen: true, chineseVoice: 'xiaoxiao' },
+    }
+    const migrated = parseState(JSON.stringify(legacy))
+    expect(migrated).toMatchObject({ schemaVersion: 2, contentVersion: CONTENT_VERSION, settings: { learningPlan: 'standard' }, session: null })
+    expect(migrated.words['ogden-apple']).toEqual(learned())
+    expect(migrated.words['ogden-ball']).toBeUndefined()
+  })
+  it('restores a completed review spelling snapshot without changing word progress', () => {
     let state = freshState()
     state.words['ogden-apple'] = learned({ nextReviewOn: day })
     state = act(state, { type: 'start', mode: 'review' })
@@ -223,8 +286,6 @@ describe('storage and TSV', () => {
     state = act(state, { type: 'spellInput', value: 'apple' })
     state = act(state, { type: 'submitSpell' })
     state = act(state, { type: 'peek', wordId: 'ogden-apple' })
-    state.session!.input = ''
-    state.session!.feedback = null
     let raw = JSON.stringify(state)
     const original = raw
     const storage = createStore({ getItem: () => raw, setItem: (_, value) => { raw = value } })
@@ -234,9 +295,6 @@ describe('storage and TSV', () => {
     expect(raw).toBe(original)
     storage.dispatch({ type: 'next' }, day)
     expect(parseState(raw).session!.question).toBe('listen')
-    state.session!.flags.read.hint = false
-    expect(() => parseState(JSON.stringify(state))).toThrow()
-    state.session!.flags.read.hint = true
     state.session!.completed = 5
     expect(() => parseState(JSON.stringify(state))).toThrow()
   })
@@ -255,17 +313,17 @@ describe('storage and TSV', () => {
     const store = createStore({ getItem: () => value, setItem: (_, raw) => { if (fail) throw new Error('Quota'); value = raw } })
     store.dispatch({ type: 'start', mode: 'lesson' }, day)
     expect(store.getSnapshot().status).toBe('unsaved')
-    expect(store.getSnapshot().state.session?.wordIds[0]).toBe('ogden-apple')
+    expect(store.getSnapshot().state.session?.wordIds[0]).toBe('ogden-i')
     fail = false; store.retry()
     expect(store.getSnapshot().status).toBe('saved')
-    expect(parseState(value).session?.wordIds[0]).toBe('ogden-apple')
+    expect(parseState(value).session?.wordIds[0]).toBe('ogden-i')
   })
   it('blocks a stale tab before a storage event and loads the latest snapshot', () => {
     let value: string | null = null
     const port = { getItem: () => value, setItem: (key: string, raw: string) => { expect(key).toBe(STORAGE_KEY); value = raw } }
     const a = createStore(port), b = createStore(port)
     a.dispatch({ type: 'start', mode: 'lesson' }, day)
-    b.dispatch({ type: 'start', mode: 'lesson', lessonId: 2 }, day)
+    b.dispatch({ type: 'start', mode: 'lesson', classId: 'standard-002' }, day)
     expect(b.getSnapshot().status).toBe('conflict')
     b.retry()
     expect(b.getSnapshot().state).toEqual(a.getSnapshot().state)
@@ -278,6 +336,17 @@ describe('storage and TSV', () => {
     invalid.session = null
     expect(() => parseState(JSON.stringify(invalid))).toThrow()
   })
+  it('rejects shortened or altered saved sentence tests', () => {
+    let state = act(freshState(), { type: 'start', mode: 'lesson' })
+    while (state.session!.phase === 'active') { state = finishQuestions(state); state = act(state, { type: 'next' }) }
+    const shortened = structuredClone(state)
+    shortened.session!.exitTest!.items = shortened.session!.exitTest!.items.slice(0, 1)
+    shortened.session!.exitTest!.results = Object.fromEntries(Object.entries(shortened.session!.exitTest!.results).slice(0, 1))
+    expect(() => parseState(JSON.stringify(shortened))).toThrow()
+    const altered = structuredClone(state)
+    altered.session!.exitTest!.items[0].promptBefore = 'Changed '
+    expect(() => parseState(JSON.stringify(altered))).toThrow()
+  })
   it('exports all words with BOM, Chinese labels, blank dates and timezone without changing state', () => {
     const state = freshState()
     const original = JSON.stringify(state)
@@ -286,8 +355,8 @@ describe('storage and TSV', () => {
     expect(result.text.charCodeAt(0)).toBe(0xfeff)
     expect(result.filename).toBe('little-english-progress-20261008-090807.tsv')
     expect(lines).toHaveLength(851)
-    expect(lines[0].split('\t')).toHaveLength(9)
-    expect(lines[1]).toContain(`\t${CONTENT_VERSION}\togden-apple\tapple\t1\t未开始\t0\t\t`)
+    expect(lines[0].split('\t')).toHaveLength(11)
+    expect(lines[1]).toContain(`\t${CONTENT_VERSION}\togden-apple\tapple\tfood-farm\tfood-farm-g01\tstandard\t未开始\t0\t\t`)
     expect(lines[1]).toMatch(/2026-10-08T09:08:07[+-]\d{2}:\d{2}/)
     expect(JSON.stringify(state)).toBe(original)
   })

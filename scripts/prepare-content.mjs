@@ -4,7 +4,10 @@ import { readFileSync, writeFileSync } from 'node:fs'
 const source = new URL('../content/words.json', import.meta.url)
 const target = new URL('../src/data/words.generated.json', import.meta.url)
 const readableTarget = new URL('../src/data/words.source.generated.json', import.meta.url)
+const courseSource = new URL('../content/course.json', import.meta.url)
+const courseTarget = new URL('../src/data/course.generated.json', import.meta.url)
 const words = JSON.parse(readFileSync(source, 'utf8'))
+const course = JSON.parse(readFileSync(courseSource, 'utf8'))
 const helperKey = helper => JSON.stringify([helper.word, helper.meaning, helper.audio])
 const helperByKey = new Map()
 for (const word of words) {
@@ -29,4 +32,16 @@ const browserCatalogue = {
 const json = JSON.stringify(browserCatalogue)
 writeFileSync(target, json + '\n', 'utf8')
 writeFileSync(readableTarget, JSON.stringify(words) + '\n', 'utf8')
-console.log(`Prepared catalogue: ${Buffer.byteLength(json) + 1} bytes`)
+const compactClass = item => [item.id, item.unitId, item.groupIds, item.wordIds.map(id => wordIndex.get(id))]
+const browserCourse = {
+  v: 1,
+  u: course.units.map(unit => [
+    unit.id, unit.title, unit.titleZh,
+    unit.groups.map(group => [group.id, group.title, group.titleZh, group.wordIds.map(id => wordIndex.get(id))]),
+  ]),
+  s: course.plans.standard.classes.map(compactClass),
+  a: course.plans.accelerated.classes.map(compactClass),
+}
+const courseJson = JSON.stringify(browserCourse)
+writeFileSync(courseTarget, courseJson + '\n', 'utf8')
+console.log(`Prepared catalogue: ${Buffer.byteLength(json) + 1} bytes; course: ${Buffer.byteLength(courseJson) + 1} bytes`)

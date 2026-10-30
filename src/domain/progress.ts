@@ -1,4 +1,6 @@
-import { lessonWords, words } from '../data/catalog'
+import { words } from '../data/catalog'
+import { courseClasses, nextCourseClass, unitProgress } from '../data/course'
+import type { CourseClass, CourseUnit } from '../data/types'
 import type { AppState, LearningStatus, WordProgress } from '../data/types'
 
 export function localDay(date = new Date()): string {
@@ -36,17 +38,28 @@ export function dueWords(state: AppState, day: string): string[] {
 }
 
 export function lessonStatus(state: AppState, lessonId: number): '已学过' | '未学完' | '未开始' {
-  const list = lessonWords(lessonId)
-  if (list.every(word => state.words[word.id]?.teaching === 'completed')) return '已学过'
-  return list.some(word => state.words[word.id]) ? '未学完' : '未开始'
+  const courseClass = courseClasses[state.settings.learningPlan].find(item => item.sequence === lessonId)
+  return courseClass ? classStatus(state, courseClass) : '未开始'
 }
 
 export function nextLesson(state: AppState): number | null {
-  return words.find(word => state.words[word.id]?.teaching !== 'completed')?.lessonId ?? null
+  return nextClass(state)?.sequence ?? null
+}
+
+export const nextClass = (state: AppState): CourseClass | null => nextCourseClass(state.settings.learningPlan, id => state.words[id]?.teaching === 'completed')
+
+export function classStatus(state: AppState, courseClass: CourseClass): '已学过' | '未学完' | '未开始' {
+  if (courseClass.wordIds.every(id => state.words[id]?.teaching === 'completed')) return '已学过'
+  return courseClass.wordIds.some(id => state.words[id]) || state.session?.classId === courseClass.id ? '未学完' : '未开始'
+}
+
+export function courseUnitStatus(state: AppState, unit: CourseUnit): '已学过' | '未学完' | '未开始' {
+  const completed = unitProgress(unit, id => state.words[id]?.teaching === 'completed')
+  return completed === unit.wordIds.length ? '已学过' : completed || state.session?.unitId === unit.id ? '未学完' : '未开始'
 }
 
 export function mainAction(state: AppState, day: string) {
-  if (state.session?.phase === 'active') return 'continue'
+  if (state.session && state.session.phase !== 'result') return 'continue'
   if (dueWords(state, day).length) return 'review'
   return nextLesson(state) ? 'lesson' : 'wordbook'
 }

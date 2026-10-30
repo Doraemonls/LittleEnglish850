@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useApp, store } from '../app/store'
 import { navigate } from '../app/router'
 import { getWord } from '../data/catalog'
+import { unitById } from '../data/course'
 import type { Session } from '../data/types'
 import { createSession, isQuiz, stepSession, type ExerciseAction } from '../domain/session'
-import { dueWords, localDay, nextLesson } from '../domain/progress'
+import { dueWords, localDay, nextClass } from '../domain/progress'
 import { audioPlayer } from '../services/audio'
 import { Icon } from '../components/Icon'
 import { WordCard, Sentence } from '../components/WordCard'
@@ -74,7 +75,7 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
     setSkippedWord(word.word)
     dispatch({ type: 'skip' })
   }
-  const label = session.mode === 'lesson' ? `Lesson ${session.lessonId}` : session.mode === 'review' ? 'Review' : 'Practice'
+  const label = session.mode === 'lesson' ? `Class ${session.classSequence ?? ''}` : session.mode === 'review' ? 'Review' : 'Practice'
 
   const questions = session.mode === 'review' ? ['spell', 'listen', 'read', 'sentence'] : ['card', 'read', 'listen', 'spell', 'sentence']
   const currentIdx = questions.indexOf(question)
@@ -178,7 +179,7 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
       {isQuiz(question) && <div className={`answer-feedback ${session.feedback === 'correct' ? 'success' : ''}`} role="status" aria-live="polite" aria-atomic="true">
         {session.feedback === 'correct' ? <><Icon name="check"/>Correct!</> : session.feedback === 'retry' || session.feedback === 'letters' ? 'Try again' : null}
       </div>}
-      {!isQuiz(question) && <button className="button primary full continue-button" onClick={() => { audioPlayer.stop(); dispatch({ type: 'next' }) }}>{question === 'card' ? 'Try it' : session.index === session.wordIds.length - 1 ? 'Finish' : 'Next word'}<Icon name="arrow"/></button>}
+      {!isQuiz(question) && <button className="button primary full continue-button" onClick={() => { audioPlayer.stop(); dispatch({ type: 'next' }) }}>{question === 'card' ? 'Try it' : session.index === session.wordIds.length - 1 && session.mode === 'lesson' ? 'Start class test' : session.index === session.wordIds.length - 1 ? 'Finish' : 'Next word'}<Icon name="arrow"/></button>}
       {session.mode === 'lesson' && question === 'card' && <>
         <button ref={skipButtonRef} className="button secondary full skip-word-button" onClick={() => { audioPlayer.stop(); setSkipOpen(true) }}><Icon name="check"/>I know this word</button>
         <span className="skip-word-help">Skip and review it later</span>
@@ -195,14 +196,44 @@ function Exercise({ session, dispatch, onExit }: { session: Session; dispatch: (
   </main>
 }
 
+function SentenceExitTest({ session, dispatch }: { session: Session; dispatch: (action: ExerciseAction) => void }) {
+  const { state } = useApp()
+  const input = useRef<HTMLInputElement>(null)
+  const test = session.exitTest!
+  const item = test.items[test.index]
+  const result = test.results[item.wordId]
+  const unit = session.unitId ? unitById.get(session.unitId) : null
+  useEffect(() => { if (!result.correct) input.current?.focus() }, [test.index, result.correct, test.feedback])
+  useEffect(() => {
+    if (test.feedback === 'retry') input.current?.select()
+    if (test.feedback === 'correct' && state.settings.spokenGuidance) audioPlayer.play('assets/audio/prompt-correct.mp3', state.settings.volume, undefined, state.settings.chineseVoice)
+  }, [test.feedback, state.settings.chineseVoice, state.settings.spokenGuidance, state.settings.volume])
+  const submit = (event: FormEvent) => { event.preventDefault(); dispatch({ type: 'submitSentenceTest' }) }
+  return <main className="learn page" id="main" lang="en">
+    <div className="exercise-nav"><span>Class {session.classSequence}<span className="round-progress">Test {test.index + 1} / {test.items.length}</span></span><a className="text-button" href="#/"><Icon name="pause"/>Pause</a></div>
+    <section className="exercise-panel sentence-test-panel">
+      <div className="question-header"><p className="eyebrow">{unit?.title}</p><h1 className="question-title">Complete the sentence</h1><span className="question-subtitle">Type the missing word</span></div>
+      <form className="sentence-cloze" onSubmit={submit}>
+        <label className="sr-only" htmlFor="sentence-test-answer">Missing word</label>
+        <div className="sentence-cloze-line"><span>{item.promptBefore}</span><input id="sentence-test-answer" ref={input} value={test.input} disabled={result.correct} autoComplete="off" autoCapitalize="none" spellCheck={false} maxLength={64} aria-invalid={test.feedback === 'retry'} onChange={event => dispatch({ type: 'sentenceTestInput', value: event.target.value })}/><span>{item.promptAfter}</span></div>
+        <p className="sentence-translation" lang="zh-CN">{item.sentenceZh}</p>
+        {!result.correct && <button className="button primary full" type="submit" disabled={!test.input.trim()}>Check answer</button>}
+      </form>
+      <div className={`answer-feedback ${test.feedback === 'correct' ? 'success' : ''}`} role="status" aria-live="polite">{test.feedback === 'correct' ? <><Icon name="check"/>Correct!</> : test.feedback === 'retry' ? 'Check the spelling and try again.' : null}</div>
+      {result.correct && <div className="sentence-test-success"><p><strong>{item.promptBefore}{item.displayAnswer}{item.promptAfter}</strong></p><AudioButton src={item.audio} label="Listen to the full sentence" language="en"/><button className="button primary full" onClick={() => dispatch({ type: 'nextSentenceTest' })}>{test.index === test.items.length - 1 ? 'See class result' : 'Next sentence'}<Icon name="arrow"/></button></div>}
+    </section>
+  </main>
+}
+
 function Result({ session, onExit, onContinue }: { session: Session; onExit: () => void; onContinue?: () => void }) {
   return <main className="result page" id="main" lang="en">
     <div className="result-card">
       <div className="result-mark"><Icon name="check" size={42}/></div>
       <div className="result-stars" aria-hidden="true">⭐ ⭐ ⭐</div>
-      <p className="eyebrow">{session.mode === 'lesson' ? `Lesson ${session.lessonId}` : session.mode === 'review' ? 'Review' : 'Practice'}</p>
+      <p className="eyebrow">{session.mode === 'lesson' ? `Class ${session.classSequence ?? ''}` : session.mode === 'review' ? 'Review' : 'Practice'}</p>
       <h1>All done!</h1>
       <p className="result-subtitle">You practised {session.completed} {session.completed === 1 ? 'word' : 'words'}.</p>
+      {session.exitTest && <p className="result-subtitle">Sentence test: {Object.values(session.exitTest.results).filter(result => result.firstAttemptCorrect).length}/{session.exitTest.items.length} correct on the first try.</p>}
       <div className="result-trophy-shelf" aria-label="Words practised this round">
         <h2 className="trophy-shelf-title">Words you practised</h2>
         <div className="trophy-grid">
@@ -231,8 +262,9 @@ export function Learn() {
   const { state } = useApp()
   const session = state.session
   if (!session) return <main className="empty page" id="main" lang="en"><h1>Start with a word</h1><a className="button primary" href="#/">Home</a></main>
+  if (session.phase === 'exit-test') return <SentenceExitTest session={session} dispatch={action => store.dispatch(action)}/>
   if (session.phase === 'result') {
-    const canContinue = dueWords(state, localDay()).length || nextLesson(state)
+    const canContinue = dueWords(state, localDay()).length || nextClass(state)
     return <Result session={session} onExit={() => { store.dispatch({ type: 'leaveResult' }); navigate('/') }} onContinue={canContinue ? () => store.dispatch({ type: 'start', mode: dueWords(state, localDay()).length ? 'review' : 'lesson' }) : undefined}/>
   }
   return <Exercise session={session} dispatch={action => store.dispatch(action)} onExit={() => navigate('/')}/>

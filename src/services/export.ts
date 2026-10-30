@@ -1,4 +1,5 @@
 import { words } from '../data/catalog'
+import { placementByWordId } from '../data/course'
 import type { AppState } from '../data/types'
 import { localDay, statusOf, STATUS_LABELS } from '../domain/progress'
 
@@ -7,10 +8,11 @@ export function makeExport(state: AppState, now = new Date()) {
   const pad = (value: number) => String(value).padStart(2, '0')
   const clock = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
   const timestamp = `${localDay(now)}T${clock}${offset >= 0 ? '+' : '-'}${pad(Math.floor(Math.abs(offset) / 60))}:${pad(Math.abs(offset) % 60)}`
-  const rows: (string | number)[][] = [['导出时间', '词表版本', '词ID', '单词', '课次', '学习状态', '连续独立通过阶段', '最近复习判定日', '下次复习日']]
+  const rows: (string | number)[][] = [['导出时间', '词表版本', '词ID', '单词', '单元', '内容组', '学习计划', '学习状态', '连续独立通过阶段', '最近复习判定日', '下次复习日']]
   for (const word of words) {
     const progress = state.words[word.id]
-    rows.push([timestamp, state.contentVersion, word.id, word.word, word.lessonId, STATUS_LABELS[statusOf(progress)], progress?.reviewStep ?? 0, progress?.lastReviewedOn ?? '', progress?.nextReviewOn ?? ''])
+    const placement = placementByWordId.get(word.id)
+    rows.push([timestamp, state.contentVersion, word.id, word.word, placement?.unitId ?? '', placement?.groupId ?? '', state.settings.learningPlan, STATUS_LABELS[statusOf(progress)], progress?.reviewStep ?? 0, progress?.lastReviewedOn ?? '', progress?.nextReviewOn ?? ''])
   }
   const escape = (value: string | number) => String(value).replace(/[\t\r\n]/g, ' ')
   return {

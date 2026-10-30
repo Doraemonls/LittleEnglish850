@@ -5,8 +5,14 @@ import { STORAGE_KEY } from '../../src/services/storage'
 import { addDays, localDay } from '../../src/domain/progress'
 
 async function stored(page: Page) { return page.evaluate(key => JSON.parse(localStorage.getItem(key) || 'null'), STORAGE_KEY) }
+async function chooseStandard(page: Page) {
+  const choice = page.getByRole('button', { name: /标准学习/ })
+  await expect(choice).toBeVisible()
+  await choice.click()
+}
 async function start(page: Page) {
   await page.goto('./')
+  await chooseStandard(page)
   await page.getByRole('button', { name: '开始学单词', exact: true }).click()
 }
 async function hear(page: Page) {
@@ -25,6 +31,8 @@ async function prepareSpell(page: Page, meaning = '苹果') {
 
 test('simple child home and working search with retained filters', async ({ page }) => {
   await page.goto('./')
+  await expect(page.getByRole('heading', { name: '选择学习计划' })).toBeVisible()
+  await page.getByRole('button', { name: /标准学习/ }).click()
   await expect(page.getByRole('heading', { name: '一起学单词吧' })).toBeVisible()
   await expect(page.locator('.word-row')).toHaveCount(0)
   const text = await page.locator('main:visible').innerText()
@@ -42,34 +50,45 @@ test('simple child home and working search with retained filters', async ({ page
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 })
 
+test('accelerated plan starts an accelerated course class', async ({ page }) => {
+  await page.goto('./')
+  await page.getByRole('button', { name: /加速学习/ }).click()
+  await expect(page.getByText(/加速学习 · 第 1 课/)).toBeVisible()
+  await page.getByRole('button', { name: '开始学单词', exact: true }).click()
+  const snapshot = await stored(page)
+  expect(snapshot.settings).toMatchObject({ learningPlan: 'accelerated', planSelected: true })
+  expect(snapshot.session).toMatchObject({ classId: 'accelerated-001', planAtStart: 'accelerated' })
+  expect(snapshot.session.wordIds).toHaveLength(6)
+})
+
 test('a known lesson word can be safely confirmed and skipped', async ({ page }) => {
   await start(page)
   await expect(page.locator('.step-dot-label')).toHaveText(['Card', 'Meaning', 'Listen', 'Spell', 'Sentence'])
   const skip = page.getByRole('button', { name: 'I know this word', exact: true })
   await skip.click()
-  const dialog = page.getByRole('dialog', { name: 'Skip apple?' })
+  const dialog = page.getByRole('dialog', { name: 'Skip I?' })
   await expect(dialog).toBeVisible()
   await expect(page.getByRole('button', { name: 'Keep practising' })).toBeFocused()
   await page.keyboard.press('Escape')
   await expect(dialog).toBeHidden()
   await expect(skip).toBeFocused()
-  expect((await stored(page)).words['ogden-apple'].teaching).toBe('started')
+  expect((await stored(page)).words['ogden-i'].teaching).toBe('started')
 
   await skip.click()
   await page.getByRole('button', { name: 'Yes, skip' }).click()
-  await expect(page.getByRole('heading', { name: 'ball', exact: true })).toBeVisible()
-  await expect(page.locator('.skip-word-status')).toContainText('apple · Learned')
+  await expect(page.getByRole('heading', { name: 'you', exact: true })).toBeVisible()
+  await expect(page.locator('.skip-word-status')).toContainText('I · Learned')
   const snapshot = await stored(page)
-  expect(snapshot.words['ogden-apple']).toEqual({ teaching: 'completed', reviewStep: 0, lastReviewedOn: null, nextReviewOn: addDays(localDay(), 1) })
+  expect(snapshot.words['ogden-i']).toEqual({ teaching: 'completed', reviewStep: 0, lastReviewedOn: null, nextReviewOn: addDays(localDay(), 1) })
   expect(snapshot.session).toMatchObject({ index: 1, completed: 1, question: 'card', phase: 'active' })
 })
 
-test('five-word lesson, whole-answer retry, focus, refresh resume and result', async ({ page }) => {
+test('six-word class requires its sentence test before result', async ({ page }) => {
   test.setTimeout(120_000)
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
   await start(page)
-  const entries = [['apple', '苹果'], ['ball', '球'], ['cat', '猫'], ['dog', '狗'], ['book', '书']]
+  const entries = [['I', '我'], ['you', '你'], ['he', '他'], ['who', '谁'], ['this', '这个'], ['that', '那个']]
   for (let index = 0; index < entries.length; index++) {
     const [word, meaning] = entries[index]
     await expect(page.getByRole('heading', { name: word, exact: true })).toBeVisible()
@@ -77,14 +96,13 @@ test('five-word lesson, whole-answer retry, focus, refresh resume and result', a
     const input = page.getByRole('textbox', { name: 'Type the word you hear' })
     await expect(input).toBeFocused()
     if (!index) {
-      expect(await page.locator('main:visible').innerText()).not.toContain('apple')
-      await input.pressSequentially('ap')
+      expect(await page.locator('main:visible').innerText()).not.toContain('I have a cat.')
+      await input.pressSequentially('x')
       await page.reload()
       await hear(page)
-      await expect(input).toHaveValue('ap')
-      await input.pressSequentially('x')
+      await expect(input).toHaveValue('x')
       await input.press('Enter')
-      await expect(input).toHaveValue('apx')
+      await expect(input).toHaveValue('x')
       await expect(page.getByText('Try again', { exact: true })).toBeVisible()
       await expect(input).toBeFocused()
       await page.reload()
@@ -98,16 +116,35 @@ test('five-word lesson, whole-answer retry, focus, refresh resume and result', a
     await input.press('Enter')
     await expect(page.getByText('Correct!', { exact: true })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Read a sentence.' })).toBeVisible()
-    await page.getByRole('button', { name: index === 4 ? 'Finish' : 'Next word', exact: true }).click()
+    await page.getByRole('button', { name: index === entries.length - 1 ? 'Start class test' : 'Next word', exact: true }).click()
+  }
+  await expect(page.getByRole('heading', { name: 'Complete the sentence' })).toBeVisible()
+  let snapshot = await stored(page)
+  expect(entries.every(([word]) => snapshot.words[`ogden-${word.toLowerCase()}`]?.teaching !== 'completed')).toBe(true)
+  for (let index = 0; index < entries.length; index++) {
+    const answer = entries[index][0]
+    const input = page.getByRole('textbox', { name: 'Missing word' })
+    await expect(input).toBeFocused()
+    if (!index) {
+      await input.fill('wrong')
+      await input.press('Enter')
+      await expect(page.getByText('Check the spelling and try again.')).toBeVisible()
+      await expect(input).toBeFocused()
+    }
+    await input.fill(answer)
+    await input.press('Enter')
+    await expect(page.getByText('Correct!', { exact: true })).toBeVisible()
+    await page.getByRole('button', { name: index === entries.length - 1 ? 'See class result' : 'Next sentence' }).click()
   }
   await expect(page.getByRole('heading', { name: 'All done!' })).toBeVisible()
-  await expect(page.getByText('You practised 5 words.')).toBeVisible()
+  await expect(page.getByText('You practised 6 words.')).toBeVisible()
+  await expect(page.getByText('Sentence test: 5/6 correct on the first try.')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Words you practised' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Listen to apple' })).toBeVisible()
-  const snapshot = await stored(page)
-  expect(Object.keys(snapshot.words)).toHaveLength(5)
+  await expect(page.getByRole('button', { name: 'Listen to I' })).toBeVisible()
+  snapshot = await stored(page)
+  expect(Object.keys(snapshot.words)).toHaveLength(6)
   expect(snapshot.session.retry).toBe(1)
-  expect(snapshot.words['ogden-apple'].nextReviewOn).toBe(addDays(localDay(), 1))
+  expect(snapshot.words['ogden-i'].nextReviewOn).toBe(addDays(localDay(), 1))
   await page.getByRole('button', { name: 'Done for today' }).click()
   expect((await stored(page)).session).toBeNull()
   expect(errors).toEqual([])
@@ -115,15 +152,15 @@ test('five-word lesson, whole-answer retry, focus, refresh resume and result', a
 
 test('natural whole-word editing keeps wrong text and accepts replacement input', async ({ page }) => {
   await start(page)
-  await prepareSpell(page)
+  await prepareSpell(page, '我')
   const input = page.getByRole('textbox', { name: 'Type the word you hear' })
-  await input.fill('apxle')
+  await input.fill('wrong')
   await input.press('Enter')
-  await expect(input).toHaveValue('apxle')
+  await expect(input).toHaveValue('wrong')
   await expect(page.getByText('Try again', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Continue', exact: true })).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Hint' })).toHaveCount(0)
-  await input.fill('APPLE')
+  await input.fill('I')
   await input.press('Enter')
   await expect(page.getByText('Correct!', { exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Read a sentence.' })).toBeVisible()
@@ -136,27 +173,28 @@ test('failed audio blocks listening answers and supports retry', async ({ page }
   // Reject play() at the media boundary to exercise the same failure UI in all engines.
   await page.evaluate(() => {
     const original = HTMLMediaElement.prototype.play
-    HTMLMediaElement.prototype.play = function () { return this.src.endsWith('apple-word.mp3') ? Promise.reject(new DOMException('Media unavailable', 'NotSupportedError')) : original.call(this) }
+    HTMLMediaElement.prototype.play = function () { return this.src.endsWith('i-word.mp3') ? Promise.reject(new DOMException('Media unavailable', 'NotSupportedError')) : original.call(this) }
     ;(window as typeof window & { restoreAudio?: () => void }).restoreAudio = () => { HTMLMediaElement.prototype.play = original }
   })
-  await page.getByRole('button', { name: '苹果', exact: true }).click()
+  await page.getByRole('button', { name: '我', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'What do you hear?' })).toBeVisible()
   await expect(page.getByRole('alert')).toContainText('Sound is unavailable')
-  await expect(page.getByRole('button', { name: '苹果', exact: true })).toBeDisabled()
+  await expect(page.getByRole('button', { name: '我', exact: true })).toBeDisabled()
   await page.evaluate(() => (window as typeof window & { restoreAudio?: () => void }).restoreAudio?.())
   await page.getByRole('button', { name: 'Listen', exact: true }).click()
   await hear(page)
-  await expect(page.getByRole('button', { name: '苹果', exact: true })).toBeEnabled()
+  await expect(page.getByRole('button', { name: '我', exact: true })).toBeEnabled()
 })
 
 test('sentence rows play with click and keyboard, while each quiz row is one action', async ({ page }) => {
   const initial = freshState()
   initial.settings.onboardingSeen = true
   initial.settings.spokenGuidance = false
+  initial.settings.planSelected = true
   await page.addInitScript(({ key, state }) => localStorage.setItem(key, JSON.stringify(state)), { key: STORAGE_KEY, state: initial })
   await page.goto('./')
   await page.getByRole('button', { name: '开始学单词', exact: true }).click()
-  const sentence = page.getByRole('button', { name: 'Play sentence: This is an apple.', exact: true })
+  const sentence = page.getByRole('button', { name: 'Play sentence: I have a cat.', exact: true })
   const text = sentence.locator('.english-sentence')
   await expect(text).toHaveCSS('font-weight', '400')
   await expect(page.getByText('听句子', { exact: true })).toHaveCount(0)
@@ -164,19 +202,19 @@ test('sentence rows play with click and keyboard, while each quiz row is one act
     if (activation === 'click') await sentence.click()
     else { await sentence.focus(); await sentence.press(activation) }
     await expect(sentence).toHaveClass(/playing/)
-    await expect(text).toHaveText('This is an apple.')
+    await expect(text).toHaveText('I have a cat.')
     await expect(sentence).not.toHaveClass(/playing/)
     expect((await stored(page)).session.question).toBe('card')
   }
   await page.getByRole('button', { name: 'Try it', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'What does apple mean?' })).toHaveCSS('font-weight', '400')
+  await expect(page.getByRole('heading', { name: 'What does I mean?' })).toHaveCSS('font-weight', '400')
   await expect(page.locator('.question-subtitle')).toHaveText('Choose a meaning')
   await expect(page.getByRole('button', { name: /^Play meaning:/ })).toHaveCount(0)
   await expect(page.locator('.choice-row')).toHaveCount(3)
   await expect(page.locator('.choice-row button')).toHaveCount(0)
   expect((await stored(page)).session.flags.read.done).toBe(false)
   await expect(page.getByRole('button', { name: 'Continue', exact: true })).toHaveCount(0)
-  await page.getByRole('button', { name: '苹果', exact: true }).click()
+  await page.getByRole('button', { name: '我', exact: true }).click()
   await expect(page.getByText('Correct!', { exact: true })).toBeVisible()
 })
 
@@ -184,6 +222,7 @@ test('wordbook practice preserves the formal session and marks current review hi
   const state = freshState()
   state.settings.onboardingSeen = true
   state.settings.spokenGuidance = false
+  state.settings.planSelected = true
   state.words['ogden-apple'] = { teaching: 'completed', reviewStep: 2, lastReviewedOn: addDays(localDay(), -7), nextReviewOn: localDay() }
   await page.addInitScript(({ key, state }) => { if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(state)) }, { key: STORAGE_KEY, state })
   await page.goto('./')
@@ -226,7 +265,7 @@ test('parent has one export action with 850 UTF-8 rows', async ({ page }) => {
   const text = bytes.toString('utf8')
   expect(text.trimEnd().split('\r\n')).toHaveLength(851)
   expect(text).toContain('最近复习判定日')
-  expect(text).toContain('\togden-apple\tapple\t1\t未开始\t0\t\t')
+  expect(text).toContain('\togden-apple\tapple\tfood-farm\tfood-farm-g01\tstandard\t未开始\t0\t\t')
   await expect(page.locator('.export-status')).toContainText('已发起下载')
 })
 
@@ -234,6 +273,7 @@ test('completed review spelling survives a wordbook visit and reload', async ({ 
   const initial = freshState()
   initial.settings.onboardingSeen = true
   initial.settings.spokenGuidance = false
+  initial.settings.planSelected = true
   initial.words['ogden-apple'] = { teaching: 'completed', reviewStep: 1, lastReviewedOn: '2026-01-01', nextReviewOn: '2026-01-04' }
   await page.addInitScript(({ key, state }) => {
     if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(state))
@@ -273,6 +313,7 @@ test('damaged storage remains intact and the application blocks overwrites', asy
 
 test('a second tab blocks stale editing and reloads the current exercise', async ({ page, context }) => {
   await page.goto('./')
+  await page.getByRole('button', { name: /标准学习/ }).click()
   const second = await context.newPage()
   await second.goto('./')
   await expect(second.getByRole('button', { name: '开始学单词', exact: true })).toBeVisible()
@@ -280,5 +321,5 @@ test('a second tab blocks stale editing and reloads the current exercise', async
   await expect(second.getByRole('heading', { name: '另一页更新了学习记录' })).toBeVisible()
   await second.getByRole('button', { name: '读取最新进度' }).click()
   await second.getByRole('button', { name: '继续学', exact: true }).click()
-  await expect(second.getByRole('heading', { name: 'apple', exact: true })).toBeVisible()
+  await expect(second.getByRole('heading', { name: 'I', exact: true })).toBeVisible()
 })

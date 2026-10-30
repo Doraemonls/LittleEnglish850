@@ -332,6 +332,24 @@ main:focus { outline: none; }
   .parent { max-width: 650px; }
   .course-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+.course-context { margin: 12px 0 0; color: var(--text-muted); font-size: 14px; text-align: center; }
+.plan-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+.plan-choice-card { position: relative; display: grid; gap: 8px; min-height: 150px; padding: 22px; border: 2px solid var(--border); border-radius: 22px; background: var(--surface); color: var(--text); text-align: left; cursor: pointer; }
+.plan-choice-card:hover, .plan-choice-card:focus-visible { border-color: var(--accent); transform: translateY(-2px); }
+.plan-choice-card.recommended::before { content: '推荐'; position: absolute; top: -11px; right: 16px; padding: 3px 10px; border-radius: 999px; background: var(--accent); color: white; font-size: 12px; }
+.plan-choice-card strong { font-size: 22px; }
+.plan-choice-card span { font-size: 17px; }
+.plan-choice-card small { color: var(--text-muted); }
+.sentence-test-panel { max-width: 760px; }
+.sentence-cloze { margin-top: 28px; }
+.sentence-cloze-line { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 8px; font-size: clamp(22px, 4vw, 34px); line-height: 1.7; }
+.sentence-cloze-line input { width: min(240px, 60vw); border: 0; border-bottom: 3px solid var(--accent); border-radius: 8px 8px 0 0; background: var(--surface-soft); padding: 4px 10px; color: var(--text); font: inherit; text-align: center; }
+.sentence-cloze-line input[aria-invalid="true"] { border-color: var(--coral); background: #fff4ef; }
+.sentence-cloze-line input:disabled { color: var(--green-dark); border-color: var(--green); opacity: 1; }
+.sentence-translation { margin: 18px 0 26px; color: var(--text-muted); text-align: center; }
+.sentence-test-success { display: grid; gap: 16px; margin-top: 18px; text-align: center; }
+.sentence-test-success p { font-size: 20px; margin: 0; }
+
 @media (max-width: 700px) {
   .header-content { height: 68px; width: calc(100% - 32px); }
   .page { width: calc(100% - 32px); min-height: calc(100svh - 68px); padding-top: 20px; }
@@ -356,6 +374,7 @@ main:focus { outline: none; }
   .home-stats-chips { justify-content: center; }
   .home-start { font-size: 20px; }
   .home-wordbook { font-size: 16px; }
+  .plan-choice-grid { grid-template-columns: 1fr; }
   .learn { min-height: 100svh; padding-top: 16px; }
   .step-dots { gap: 6px; margin-bottom: 16px; }
   .step-dot, .step-dot-label { font-size: 11px; }

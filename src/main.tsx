@@ -1,7 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { initializeCatalog } from './data/catalog'
+import { initializeCourse } from './data/course'
 import catalogueUrl from './data/words.generated.json?url'
+import courseUrl from './data/course.generated.json?url'
 import './app/styles.css'
 
 const root = createRoot(document.getElementById('root')!)
@@ -14,9 +16,13 @@ async function start() {
     const controller = new AbortController()
     const timeout = window.setTimeout(() => controller.abort(), 20_000)
     try {
-      const response = await fetch(catalogueUrl, { signal: controller.signal })
-      if (!response.ok) throw new Error('Catalogue unavailable')
-      initializeCatalog(await response.json())
+      const [catalogueResponse, courseResponse] = await Promise.all([
+        fetch(catalogueUrl, { signal: controller.signal }),
+        fetch(courseUrl, { signal: controller.signal }),
+      ])
+      if (!catalogueResponse.ok || !courseResponse.ok) throw new Error('Catalogue unavailable')
+      initializeCatalog(await catalogueResponse.json())
+      initializeCourse(await courseResponse.json())
     } finally { window.clearTimeout(timeout) }
     // Read saved progress only after catalogue IDs are known.
     const { App } = await appModule
