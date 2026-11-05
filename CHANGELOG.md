@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.0-rc.3 — 2026-11-05
 
 - Replace the fixed five-word lessons with one 850-word course of 34 units and 340 two- or three-word content groups, taught at two paces: Standard (about 5 new words per class, 170 classes) and Accelerated (about 7, 136 classes). Parents choose a plan on first use and can switch in Parent Settings without losing progress; a switch applies from the next class.
 - End every class with a required fixed-sentence typing test. Word progress is settled only after every sentence is answered correctly; first-attempt accuracy is shown on the result, and the full sentence audio becomes available only after a correct answer.
