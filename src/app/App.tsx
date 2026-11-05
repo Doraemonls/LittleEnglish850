@@ -1,8 +1,11 @@
-import { useLayoutEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 import { initializeStore, useApp, store } from './store'
 import { useRoute } from './router'
 import { byId } from '../data/catalog'
 import { audioPlayer } from '../services/audio'
+import { prefetchAudio } from '../services/offline'
+import { upcomingAudio } from '../domain/prefetch'
+import { useToday } from './useToday'
 import { Home } from '../pages/Home'
 import { Learn, Practice } from '../pages/Learn'
 import { Wordbook } from '../pages/Wordbook'
@@ -14,7 +17,8 @@ import { Decorations } from '../components/Decorations'
 export function App() {
   initializeStore()
   const route = useRoute()
-  const { status } = useApp()
+  const { state, status } = useApp()
+  const today = useToday()
   const parts = route.split('/')
   const page = parts[1] || 'home'
   const id = parts[2]
@@ -31,6 +35,12 @@ export function App() {
     : status === 'conflict'
       ? { title: '另一页更新了学习记录', message: '请在一个页面里学习，读取最新进度后再继续。', action: '读取最新进度' }
       : { title: '学习记录暂时无法读取', message: '原有记录保留在浏览器中。请重试读取，或请家长检查浏览器。', action: '重试读取' }
+  useEffect(() => {
+    if (blocked) return
+    // Wait until the screen settles, then fetch the audio for what comes next (cached by the service worker).
+    const timer = window.setTimeout(() => prefetchAudio(upcomingAudio(state, today)), 1500)
+    return () => window.clearTimeout(timer)
+  }, [blocked, state, today])
   useLayoutEffect(() => {
     audioPlayer.stop()
     if (page !== 'learn') store.dispatch({ type: 'leaveResult' })

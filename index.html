@@ -7,9 +7,11 @@
     <meta name="description" content="每天认识几个英语单词。听一听，想一想，慢慢记牢。" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <title>小小英语 · Little English</title>
+    <!-- startup-preload -->
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Shown before any script arrives; React replaces it on first render. -->
+    <div id="root"><main class="empty page"><h1>正在翻开词语书…</h1></main></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

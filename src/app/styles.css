@@ -325,6 +325,7 @@ main:focus { outline: none; }
 .about-sources { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 26px; padding-top: 20px; border-top: 1.5px solid var(--border); }
 .about-sources a { display: inline-flex; align-items: center; min-height: 44px; padding: 6px 14px; border: 1.5px solid var(--control); border-radius: 12px; background: var(--paper); font-size: 14px; font-weight: 600; color: var(--ink); text-decoration: none; transition: background-color .15s ease, border-color .15s ease; }
 .about-sources a:hover { background: var(--sky); border-color: var(--blue-ink); color: var(--ink); }
+.about-sources-note { margin-top: 10px; color: var(--muted); }
 
 @media (max-width: 850px) {
   .parent-panels { grid-template-columns: 1fr; }

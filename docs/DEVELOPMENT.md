@@ -38,9 +38,20 @@ This starts an isolated preview server on port 5175 at `/LittleEnglish850/`. Tes
 
 ## Content and performance
 
-`content/words.json` is the readable catalogue. `scripts/prepare-content.mjs` generates the ignored `src/data/words.generated.json` as a normalized browser payload: repeated sentence helpers are deduplicated, unused authoring fields are omitted, and word references use numeric indexes. Vite publishes both files with content hashes; the app fetches the compact asset once, while the parent-page source link exposes the readable file only on demand. Run `npm run content:prepare` after editing the catalogue during an existing dev session. The UI chunk and catalogue start in parallel. Fetch preloading is intentionally omitted because tested WebKit versions download the same asset twice.
+`content/words.json` is the readable catalogue. `scripts/prepare-content.mjs` generates the ignored `src/data/words.generated.json` as a normalized browser payload: repeated sentence helpers are deduplicated, unused authoring fields are omitted, and word references use numeric indexes. Vite publishes both files with content hashes; the app fetches the compact asset once, while the parent-page source link exposes the readable file only on demand. Run `npm run content:prepare` after editing the catalogue during an existing dev session. The UI chunk and catalogue start in parallel. `<link rel="preload" as="fetch">` is intentionally not used for the catalogues because tested WebKit versions (and Chromium under a service worker) download the same asset twice; see below for the early fetch that replaces it.
 
 The wordbook retains its search and scroll state while hidden, but does not render its lists. Lesson lookups use the validated five-word ordering. Audio remains on demand.
+
+### Loading on slow and distant networks
+
+GitHub Pages has no servers in mainland China, sends `Cache-Control: max-age=600` for every file and cannot add headers, so repeat visits would otherwise revalidate everything. Production builds therefore add (via `scripts/vite-offline.ts`):
+
+- **One startup wave.** The built `index.html` contains the loading text, `modulepreload` for the `App` chunk, and a small inline script that starts both catalogue `fetch()` calls before the app script arrives. `src/main.tsx` takes over those pending responses on its first attempt, so each catalogue is requested once in every engine. A failed or timed-out catalogue load (15 s) is retried once after 1 s before the error screen appears.
+- **Service worker (`dist/sw.js`, template `src/sw/service-worker.js`).** Registered after the `load` event in production only. It precaches the app shell and the two catalogues (not the parent-only source catalogue), serves them cache-first and makes the app work offline after one visit. Audio is cached as it is played or prefetched, in a cache keyed by a hash of `public/assets/audio`, so a deployment without audio changes keeps it. Byte-range requests (Safari) are answered from the cached full file with `206` responses.
+- **Updates.** A new deployment installs in the background and waits. At the next startup, before the app reads the catalogue, a waiting worker is told to take over and the page reloads once, so a tab that is never closed still updates. Old caches are deleted on activation.
+- **Audio prefetch.** About 1.5 s after the screen settles, `upcomingAudio()` (`src/domain/prefetch.ts`) lists the open session's audio, up to 30 due review words and the next class (word, sentence and helper audio, plus spoken guidance in the chosen voice). The worker downloads missing files three at a time; without a worker the files only warm the HTTP cache. Nothing is prefetched before a learning plan is chosen.
+
+Playwright blocks service workers by default (they would bypass `page.route`); `tests/e2e/offline.spec.ts` enables them for the production build to cover offline reopening, byte ranges and the update hand-over.
 
 Measured on 2026-10-12, three cold Chromium runs each, with 100 ms latency, 200 KB/s download, 4× CPU throttling and a local static server without gzip:
 

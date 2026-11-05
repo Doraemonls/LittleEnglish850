@@ -10,7 +10,8 @@ export default defineConfig({
   fullyParallel: false,
   workers: 2,
   reporter: [['list']],
-  use: { baseURL, trace: 'retain-on-failure', screenshot: 'only-on-failure' },
+  // Service workers would bypass page.route; tests/e2e/offline.spec.ts allows them on purpose.
+  use: { baseURL, serviceWorkers: 'block', trace: 'retain-on-failure', screenshot: 'only-on-failure' },
   webServer: {
     command: production ? 'npm run preview -- --port 5175 --strictPort --base /LittleEnglish850/' : 'npm run dev -- --port 5174 --strictPort',
     url: baseURL,

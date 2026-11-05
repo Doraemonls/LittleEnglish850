@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- Replace the fixed five-word lessons with one 850-word course of 34 units and 340 two- or three-word content groups, taught at two paces: Standard (about 5 new words per class, 170 classes) and Accelerated (about 7, 136 classes). Parents choose a plan on first use and can switch in Parent Settings without losing progress; a switch applies from the next class.
+- End every class with a required fixed-sentence typing test. Word progress is settled only after every sentence is answered correctly; first-attempt accuracy is shown on the result, and the full sentence audio becomes available only after a correct answer.
+- Group the wordbook course view and filters by unit, and show each word's unit and group. Progress export adds unit, content group and learning plan columns.
+- Migrate existing progress to the Standard plan, keeping all settled words, review stages and dates; an unfinished legacy lesson is closed.
+- Fix the course view's unit button leading to an empty page when reviews were due; it now offers the due review first.
+- Load faster on slow and distant networks such as mainland China: the page shows its loading text and starts both catalogues and the app chunk at once, and a failed catalogue load is retried once before the error screen.
+- Add a production service worker: after one visit the app opens and the next class plays offline; audio is cached on the device, and audio for the open session, due reviews and the next class is downloaded in advance once a plan is chosen. New deployments take over at the next startup.
+- Note on the About pages that the Wikipedia and Wiktionary links may not open in every region.
+
+Not yet included from the course plan: group-first mixed practice, scene previews and shared group stories. Human editorial review, listening review and child usability trials are still required before release.
+
 ## 0.1.0-rc.2 — 2026-10-22
 
 - Refresh surfaces and controls with clearer borders, interaction states and responsive details while removing decorative shadows.

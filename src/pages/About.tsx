@@ -23,6 +23,7 @@ const copy = {
     sourcesLabel: '延伸阅读',
     historyLink: 'Basic English 简史',
     wordListLink: 'Ogden 850 词表',
+    sourcesNote: '以上为外部网站（维基百科、维基词典），部分地区可能无法打开。',
   },
   en: {
     title: 'About Little English',
@@ -46,6 +47,7 @@ const copy = {
     sourcesLabel: 'Further reading',
     historyLink: 'A history of Basic English',
     wordListLink: 'Ogden’s 850-word list',
+    sourcesNote: 'These are external sites (Wikipedia and Wiktionary) and may not open in every region.',
   },
 }
 
@@ -70,6 +72,7 @@ export function About({ language }: { language: 'zh-CN' | 'en' }) {
         <a href="https://en.wikipedia.org/wiki/Basic_English" target="_blank" rel="noreferrer">{content.historyLink}</a>
         <a href="https://en.wiktionary.org/wiki/Appendix:Basic_English_word_list" target="_blank" rel="noreferrer">{content.wordListLink}</a>
       </nav>
+      <p className="small about-sources-note">{content.sourcesNote}</p>
     </article>
   </main>
 }

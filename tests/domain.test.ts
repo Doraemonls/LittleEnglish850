@@ -7,6 +7,7 @@ import { createSession, freshState, normalizeSpelling, reduce, stepSession, type
 import { createStore, parseState, STORAGE_KEY } from '../src/services/storage'
 import { makeExport } from '../src/services/export'
 import { resolveAudioUrl } from '../src/services/audio'
+import { upcomingAudio } from '../src/domain/prefetch'
 
 const day = '2026-10-08'
 const learned = (overrides: Partial<WordProgress> = {}): WordProgress => ({ teaching: 'completed', reviewStep: 0, lastReviewedOn: null, nextReviewOn: '2026-10-09', ...overrides })
@@ -379,5 +380,35 @@ describe('audio routing', () => {
     expect(resolveAudioUrl('assets/audio/apple-word.mp3', 'yunxia')).toBe('assets/audio/apple-word.mp3')
     expect(resolveAudioUrl('assets/audio/apple-sentence.mp3', 'yunxia')).toBe('assets/audio/apple-sentence.mp3')
     expect(resolveAudioUrl('assets/audio/support-an.mp3', 'yunxia')).toBe('assets/audio/support-an.mp3')
+  })
+})
+
+describe('audio prefetch plan', () => {
+  it('waits for a plan, then lists due reviews before the next class', () => {
+    const state = freshState()
+    expect(upcomingAudio(state, day)).toEqual([])
+    state.settings.planSelected = true
+    state.settings.chineseVoice = 'yunxia'
+    state.words['ogden-apple'] = learned({ nextReviewOn: day })
+    const paths = upcomingAudio(state, day)
+    expect(paths).toContain('assets/audio/yunxia/prompt-spell.mp3')
+    expect(paths).not.toContain('assets/audio/xiaoxiao/prompt-spell.mp3')
+    const apple = paths.indexOf(getWord('ogden-apple').audio.word)
+    const first = paths.indexOf(getWord(nextClass(state)!.wordIds[0]).audio.word)
+    expect(apple).toBeGreaterThan(-1)
+    expect(first).toBeGreaterThan(apple)
+    for (const id of nextClass(state)!.wordIds) {
+      const word = getWord(id)
+      expect(paths).toEqual(expect.arrayContaining([word.audio.word, word.audio.sentence, ...word.support.map(item => item.audio)]))
+    }
+    expect(new Set(paths).size).toBe(paths.length)
+    expect(paths.every(path => path.startsWith('assets/audio/') && path.endsWith('.mp3'))).toBe(true)
+  })
+
+  it('skips spoken guidance prompts when guidance is off', () => {
+    const state = freshState()
+    state.settings.planSelected = true
+    state.settings.spokenGuidance = false
+    expect(upcomingAudio(state, day).some(path => path.includes('prompt-'))).toBe(false)
   })
 })
