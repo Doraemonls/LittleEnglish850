@@ -4,13 +4,15 @@ import { navigate } from '../app/router'
 import { byId, words } from '../data/catalog'
 import { courseUnits, placementByWordId, unitById, unitProgress } from '../data/course'
 import type { LearningStatus } from '../data/types'
-import { courseUnitStatus, nextClass, STATUS_LABELS, statusOf } from '../domain/progress'
+import { courseUnitStatus, dueWords, nextClass, STATUS_LABELS, statusOf } from '../domain/progress'
+import { useToday } from '../app/useToday'
 import { WordCard } from '../components/WordCard'
 import { Icon } from '../components/Icon'
 import { AudioButton } from '../components/AudioButton'
 
 export function Wordbook({ visible, wordId }: { visible: boolean; wordId?: string }) {
   const { state } = useApp()
+  const today = useToday()
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<LearningStatus | ''>('')
   const [unit, setUnit] = useState('')
@@ -32,6 +34,12 @@ export function Wordbook({ visible, wordId }: { visible: boolean; wordId?: strin
   const active = Boolean(state.session && state.session.phase !== 'result')
   const reviewTarget = active && state.session?.mode === 'review' && !state.session.settled ? state.session.wordIds[state.session.index] : null
   const upcoming = nextClass(state)
+  // Due review must come before new content; the reducer refuses a lesson start otherwise.
+  const due = dueWords(state, today).length
+  const startFormal = (mode: 'lesson' | 'review', classId?: string) => {
+    store.dispatch({ type: 'start', mode, classId })
+    if (store.getSnapshot().state.session) navigate('/learn')
+  }
   if (current) {
     const placement = placementByWordId.get(current.id)
     const currentUnit = placement && unitById.get(placement.unitId)
@@ -58,7 +66,9 @@ export function Wordbook({ visible, wordId }: { visible: boolean; wordId?: strin
       const label = courseUnitStatus(state, courseUnit)
       const completed = unitProgress(courseUnit, id => state.words[id]?.teaching === 'completed')
       const canStart = !active && upcoming?.unitId === courseUnit.id
-      return <article className="course-card" key={courseUnit.id}><div className="course-heading"><div className="course-title-group"><p className="eyebrow">单元 {index + 1}</p><h2>{courseUnit.titleZh}</h2><p>{courseUnit.title}</p></div><span className={`course-badge ${label === '已学过' ? 'done' : label === '未学完' ? 'active' : ''}`}>{label}</span></div><div className="course-dots-bar" aria-label={`学习进度 ${completed}/25 词`}>{courseUnit.wordIds.map(id => <span key={id} className={`course-dot ${statusOf(state.words[id])}`} title={`${getWordLabel(id)}: ${STATUS_LABELS[statusOf(state.words[id])]}`}/>)}</div><p>{completed}/25 词</p>{canStart && <button className="button secondary full" onClick={() => { store.dispatch({ type: 'start', mode: 'lesson', classId: upcoming.id }); navigate('/learn') }}>{label === '未学完' ? '继续这个单元' : '开始这个单元'}<Icon name="arrow"/></button>}</article>
+      return <article className="course-card" key={courseUnit.id}><div className="course-heading"><div className="course-title-group"><p className="eyebrow">单元 {index + 1}</p><h2>{courseUnit.titleZh}</h2><p>{courseUnit.title}</p></div><span className={`course-badge ${label === '已学过' ? 'done' : label === '未学完' ? 'active' : ''}`}>{label}</span></div><div className="course-dots-bar" aria-label={`学习进度 ${completed}/25 词`}>{courseUnit.wordIds.map(id => <span key={id} className={`course-dot ${statusOf(state.words[id])}`} title={`${getWordLabel(id)}: ${STATUS_LABELS[statusOf(state.words[id])]}`}/>)}</div><p>{completed}/25 词</p>{canStart && (due
+        ? <><p className="small">先复习 {due} 个到期单词，再学新课。</p><button className="button secondary full" onClick={() => startFormal('review')}>复习一下<Icon name="arrow"/></button></>
+        : <button className="button secondary full" onClick={() => startFormal('lesson', upcoming.id)}>{label === '未学完' ? '继续这个单元' : '开始这个单元'}<Icon name="arrow"/></button>)}</article>
     })}</div>}
   </main>
 }

@@ -50,6 +50,22 @@ test('simple child home and working search with retained filters', async ({ page
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 })
 
+test('course view sends due review before a new unit instead of a dead end', async ({ page }) => {
+  const state = freshState()
+  state.settings.onboardingSeen = true
+  state.settings.spokenGuidance = false
+  state.settings.planSelected = true
+  state.words['ogden-apple'] = { teaching: 'completed', reviewStep: 1, lastReviewedOn: addDays(localDay(), -3), nextReviewOn: localDay() }
+  await page.addInitScript(({ key, state }) => { if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(state)) }, { key: STORAGE_KEY, state })
+  await page.goto('./#/book')
+  await page.getByRole('button', { name: '看课程', exact: true }).click()
+  await expect(page.getByRole('button', { name: '开始这个单元', exact: true })).toHaveCount(0)
+  await expect(page.getByText('先复习 1 个到期单词，再学新课。')).toBeVisible()
+  await page.getByRole('button', { name: '复习一下', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Listen and spell.' })).toBeVisible()
+  expect((await stored(page)).session).toMatchObject({ mode: 'review', wordIds: ['ogden-apple'] })
+})
+
 test('accelerated plan starts an accelerated course class', async ({ page }) => {
   await page.goto('./')
   await page.getByRole('button', { name: /加速学习/ }).click()
